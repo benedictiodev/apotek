@@ -11,6 +11,7 @@ class SalesController extends Controller
 {
     public function index(Request $request) {
         $data = MasterSales::query()
+            ->where('company_id', Auth::user()->company_id)
             ->where("name", "like", "%$request->search%")
             ->paginate(10);
         return view('dashboard.master-data.sales.index', [

@@ -8,6 +8,7 @@ use App\Http\Controllers\MasterData\ProductCategoryController;
 use App\Http\Controllers\MasterData\SalesController;
 use App\Http\Controllers\MasterData\SupplierController;
 use App\Http\Controllers\MasterData\UomController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,6 +33,15 @@ Route::prefix("/dashboard")->middleware([
     Route::prefix("/change_password")->group(function () {
         Route::get("/", [AuthController::class, 'change_password'])->name('dashboard.change_password');
         Route::post("/", [AuthController::class, 'post_change_password'])->name('dashboard.change_password.post');
+    });
+
+    Route::prefix("/product")->group(function () {
+        Route::get("/", [ProductController::class, 'index'])->name('dashboard.product');
+        Route::get("/create", [ProductController::class, 'create'])->name('dashboard.product.create');
+        Route::post("/store", [ProductController::class, 'store'])->name('dashboard.product.store');
+        Route::get("/{id}/edit", [ProductController::class, 'edit'])->name('dashboard.product.edit');
+        Route::put("/{id}/update", [ProductController::class, 'update'])->name('dashboard.product.update');
+        Route::delete("/{id}", [ProductController::class, 'destroy'])->name('dashboard.product.delete');
     });
 
     Route::prefix("/master-data")->group(function () {

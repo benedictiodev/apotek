@@ -627,6 +627,9 @@
   .my-1\.5 {
     margin-block: calc(var(--spacing) * 1.5);
   }
+  .my-2 {
+    margin-block: calc(var(--spacing) * 2);
+  }
   .my-4 {
     margin-block: calc(var(--spacing) * 4);
   }
@@ -2009,6 +2012,9 @@
   .focus\:border-blue-300:focus {
     border-color: var(--color-blue-300);
   }
+  .focus\:border-blue-500:focus {
+    border-color: var(--color-blue-500);
+  }
   .focus\:bg-gray-100:focus {
     background-color: var(--color-gray-100);
   }
@@ -2030,6 +2036,9 @@
   }
   .focus\:ring-blue-300:focus {
     --tw-ring-color: var(--color-blue-300);
+  }
+  .focus\:ring-blue-500:focus {
+    --tw-ring-color: var(--color-blue-500);
   }
   .focus\:ring-gray-100:focus {
     --tw-ring-color: var(--color-gray-100);

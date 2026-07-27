@@ -27,6 +27,11 @@ function keyup_rupiah(element) {
     element.value = update_to_format_rupiah(element.value);
 }
 
+function update_to_number(nominal) {
+    nominal = parseInt(nominal.replace(/\./g, ""));
+    return nominal;
+}
+
 /**
  * Converts a snake_case string to camelCase.
  * e.g., 'hello_world' becomes 'helloWorld'

@@ -12,6 +12,13 @@
               <span class="ml-3" sidebar-toggle-item>Beranda</span>
             </a>
           </li>
+          <li>
+            <a href="{{ route('dashboard.product') }}"
+              class="flex sidebar_base group {{ str_contains(Request::route()->getName(), 'dashboard.product') ? 'active_sidebar' : '' }}">
+              <x-fas-box class="w-6 h-6 text-gray-500 transition duration-75 {{ str_contains(Request::route()->getName(), 'dashboard.product') ? 'text-white' : '' }}" />
+              <span class="ml-3" sidebar-toggle-item>Produk</span>
+            </a>
+          </li>
 
           {{-- FINANCE --}}
           @canany([
