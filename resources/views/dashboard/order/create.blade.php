@@ -21,7 +21,7 @@
         </ol>
       </nav>
       <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl mb-4">Tambahkan Data Order</h1>
-      <a href="{{ route('dashboard.product') }}"
+      <a href="{{ route('dashboard.order') }}"
         class="w-fit shadow-lg justify-center rounded-lg bg-slate-400 px-5 py-1.5 text-center text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300">
         Kembali
       </a>
@@ -55,19 +55,19 @@
                           <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
                             Nama
                           </th>
-                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="10%">
                             Jumlah
                           </th>
-                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="13%">
                             Satuan
                           </th>
-                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="15%">
                             Harga
                           </th>
-                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
-                            Diskon
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="12%">
+                            Diskon (%)
                           </th>
-                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="15%">
                             Total
                           </th>
                         </tr>
@@ -107,8 +107,27 @@
     const sequence = 0;
     let dataProduct = [];
 
+    const updateDataItem = (sequenceNumber) => {
+      const quantity = document.getElementById(`quantity-${sequenceNumber}`).value;
+      const price = update_to_number(document.getElementById(`price-${sequenceNumber}`).value);
+      const discount = document.getElementById(`discount-${sequenceNumber}`).value;
+
+      const totalPrice = price * quantity;
+      document.getElementById(`total_price-${sequenceNumber}`).value = update_to_format_rupiah(totalPrice - (totalPrice * discount / 100));
+    }
+
     const updateUom = (event, sequenceNumber) => {
-      console.log(event, sequenceNumber);
+      const value = event.value;
+      const dataProductSelected = dataProduct[sequenceNumber];
+      const dataProductDetail = dataProductSelected.find(item => item.id == value);
+
+      const quantity = document.getElementById(`quantity-${sequenceNumber}`).value;
+      document.getElementById(`uom_id-${sequenceNumber}`).value = value;
+      document.getElementById(`price-${sequenceNumber}`).value = update_to_format_rupiah(dataProductDetail.price);
+      document.getElementById(`discount-${sequenceNumber}`).value = dataProductDetail.discount;
+
+      const totalPrice = dataProductDetail.price * quantity;
+      document.getElementById(`total_price-${sequenceNumber}`).value = update_to_format_rupiah(totalPrice - (totalPrice * dataProductDetail.discount / 100));
     }
 
     const searchProduct = async (event) => {
@@ -136,7 +155,7 @@
           .map((item, index) => {
               return `
                   <option
-                      value="${item.uom_id}"
+                      value="${item.id}"
                       ${index === 0 ? 'selected' : ''}
                   >
                       ${item.uom.name}
@@ -157,14 +176,14 @@
               ${data.name}
             </td>
             <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-              <input type="number" min="0" value="1" name="quantity[${sequence}]" id="quantity-${sequence}"
+              <input type="number" min="0" value="1" name="quantity[${sequence}]" id="quantity-${sequence}" oninput="updateDataItem(${sequence})"
                 class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                 placeholder="jumlah">
             </td>
             <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-              <input type="text" name="uom_id[${sequence}]" id="uom_id-${sequence}"
+              <input type="text" name="uom_id[${sequence}]" id="uom_id-${sequence}" onkeyup="updateDataItem(${sequence})"
                 class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                value="${data.product_detail[0].uom_id}">
+                value="${data.product_detail[0].uom_id}" hidden>
               <select id="select_uom-${sequence}" name="select_uom[${sequence}]"
                 class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 onchange="updateUom(this, ${sequence})"
@@ -173,25 +192,27 @@
               </select>
             </td>
             <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-              <input type="text" name="price[${sequence}]" id="price-${sequence}" onkeyup="keyup_rupiah(this)"
+              <input type="text" name="price[${sequence}]" id="price-${sequence}" onkeyup="keyup_rupiah(this);updateDataItem(${sequence})"
                 class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                 placeholder="Harga" value="${update_to_format_rupiah(data.product_detail[0].price)}">
             </td>
             <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-              <input type="number" min="0" name="discount[${sequence}]" id="discount-${sequence}"
+              <input type="number" min="0" name="discount[${sequence}]" id="discount-${sequence}" oninput="updateDataItem(${sequence})"
                 class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                 placeholder="Diskon" value="${data.product_detail[0].discount}">
             </td>
             <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
               <input type="text" name="total_price[${sequence}]" id="total_price-${sequence}"
                 class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price)}">
+                placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price - (data.product_detail[0].price * data.product_detail[0].discount / 100))}">
             </td>
           </tr>
         `;
         const queryBodyOrderTable = document.getElementById('body-order');
         queryBodyOrderTable.insertAdjacentHTML('beforeend', body);
       }
+
+      document.getElementById('products-search').value = '';
     }
   </script>
 @endpush
