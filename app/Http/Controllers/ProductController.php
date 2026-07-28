@@ -214,4 +214,20 @@ class ProductController extends Controller
             return redirect()->route('dashboard.product')->with('failed', "Gagal menghapus data produk");
         }
     }
+
+    public function search(Request $request) {
+        $data = Product::query()
+            ->select('products.id', 'products.code', 'products.name', 'products.stock')
+            ->with(['ProductDetail', 'ProductDetail.Uom'])
+            ->where('products.company_id', Auth::user()->company_id)
+            ->where(function($querySearch) use($request) {
+                $querySearch->where("products.name", "like", "%$request->search%")
+                    ->orWhere("products.code", "like", "%$request->search%");
+            })
+            ->get();
+        
+        return response()->json([
+            'data' => json_encode($data)
+        ]);
+    }
 }

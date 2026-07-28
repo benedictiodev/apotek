@@ -67,30 +67,30 @@
           {{-- END FINANCE --}}
 
           {{-- ORDER --}}
-          @canany([
+          {{-- @canany([
             'order-order aktif-lihat',
             'order-riwayat order-lihat',
             'order-pelaporan-lihat'
-          ])  
+          ])   --}}
             <li>
               <button type="button"
-                class="flex sidebar_base group {{ str_contains(Request::route()->getName(), 'dashboard.order.') ? 'active_sidebar' : '' }}"
+                class="flex sidebar_base group p-2 {{ str_contains(Request::route()->getName(), 'dashboard.order') ? 'active_sidebar' : '' }}"
                 aria-controls="dropdown-order" data-collapse-toggle="dropdown-order">
                 <x-fas-shopping-basket
-                  class="w-6 h-6 text-gray-500 transition duration-75 mr-1 {{ str_contains(Request::route()->getName(), 'dashboard.order.') ? 'text-white' : '' }}" />
+                  class="w-6 h-6 text-gray-500 transition duration-75 mr-1 {{ str_contains(Request::route()->getName(), 'dashboard.order') ? 'text-white' : '' }}" />
                 <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>Order</span>
-                <x-fas-chevron-down class="w-4 h-4 text-gray-500 transition duration-75 mr-1 {{ str_contains(Request::route()->getName(), 'dashboard.order.') ? 'text-white' : '' }}" />
+                <x-fas-chevron-down class="w-4 h-4 text-gray-500 transition duration-75 mr-1 {{ str_contains(Request::route()->getName(), 'dashboard.order') ? 'text-white' : '' }}" />
               </button>
               <ul id="dropdown-order"
-                class="{{ str_contains(Request::route()->getName(), 'dashboard.order.') ? '' : 'hidden' }} py-2 space-y-2">
-                @can('order-order aktif-lihat') 
+                class="{{ str_contains(Request::route()->getName(), 'dashboard.order') ? '' : 'hidden' }} py-2 space-y-2">
+                {{-- @can('order-order aktif-lihat')  --}}
                   <li>
-                    <a href="{{ route('dashboard.order.order_active') }}"
-                      class="flex sidebar_base pl-11 group {{ str_contains(Request::route()->getName(), 'dashboard.order.order_active') ? 'active_sidebar' : '' }}">
+                    <a href="{{ route('dashboard.order') }}"
+                      class="flex sidebar_base pl-11 group {{ str_contains(Request::route()->getName(), 'dashboard.order') ? 'active_sidebar' : '' }}">
                       Order Aktif
                     </a>
                   </li>
-                @endcan
+                {{-- @endcan --}}
                 @can('order-riwayat order-lihat')
                   <li>
                     <a href="{{ route('dashboard.order.order_history') }}"
@@ -109,7 +109,7 @@
                 @endcan
               </ul>
             </li>
-          @endcanany
+          {{-- @endcanany --}}
           {{-- END ORDER --}}
 
           {{-- COMPANY --}}

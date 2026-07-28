@@ -6,16 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Product extends Model
+class Order extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = 'products';
+    protected $table = 'orders';
     protected $guarded = ['id'];
-
-    public function ProductDetail()
-    {
-        return $this->hasMany(ProductDetail::class, 'product_id');
-    }
 }

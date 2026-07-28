@@ -8,6 +8,7 @@ use App\Http\Controllers\MasterData\ProductCategoryController;
 use App\Http\Controllers\MasterData\SalesController;
 use App\Http\Controllers\MasterData\SupplierController;
 use App\Http\Controllers\MasterData\UomController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,12 @@ Route::prefix("/dashboard")->middleware([
         Route::get("/{id}/edit", [ProductController::class, 'edit'])->name('dashboard.product.edit');
         Route::put("/{id}/update", [ProductController::class, 'update'])->name('dashboard.product.update');
         Route::delete("/{id}", [ProductController::class, 'destroy'])->name('dashboard.product.delete');
+        Route::get("/search", [ProductController::class, 'search'])->name('dashboard.product.search');
+    });
+
+    Route::prefix("/order")->group(function () {
+        Route::get("/", [OrderController::class, 'index'])->name('dashboard.order');
+        Route::get("/create", [OrderController::class, 'create'])->name('dashboard.order.create');
     });
 
     Route::prefix("/master-data")->group(function () {

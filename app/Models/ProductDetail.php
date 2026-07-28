@@ -13,4 +13,9 @@ class ProductDetail extends Model
 
     protected $table = 'product_details';
     protected $guarded = ['id'];
+
+    public function Uom()
+    {
+        return $this->belongsTo(MasterUom::class, 'uom_id');
+    }
 }
