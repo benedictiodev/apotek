@@ -72,7 +72,14 @@
             'order-riwayat order-lihat',
             'order-pelaporan-lihat'
           ])   --}}
-            <li>
+             <li>
+              <a href="{{ route('dashboard.order') }}"
+                class="flex sidebar_base group {{ str_contains(Request::route()->getName(), 'dashboard.order') ? 'active_sidebar' : '' }}">
+                <x-fas-shopping-basket class="w-6 h-6 text-gray-500 transition duration-75 {{ str_contains(Request::route()->getName(), 'dashboard.order') ? 'text-white' : '' }}" />
+                <span class="ml-3" sidebar-toggle-item>Order</span>
+              </a>
+            </li>
+            {{-- <li>
               <button type="button"
                 class="flex sidebar_base group p-2 {{ str_contains(Request::route()->getName(), 'dashboard.order') ? 'active_sidebar' : '' }}"
                 aria-controls="dropdown-order" data-collapse-toggle="dropdown-order">
@@ -83,14 +90,14 @@
               </button>
               <ul id="dropdown-order"
                 class="{{ str_contains(Request::route()->getName(), 'dashboard.order') ? '' : 'hidden' }} py-2 space-y-2">
-                {{-- @can('order-order aktif-lihat')  --}}
+                @can('order-order aktif-lihat') 
                   <li>
                     <a href="{{ route('dashboard.order') }}"
                       class="flex sidebar_base pl-11 group {{ str_contains(Request::route()->getName(), 'dashboard.order') ? 'active_sidebar' : '' }}">
                       Order Aktif
                     </a>
                   </li>
-                {{-- @endcan --}}
+                @endcan
                 @can('order-riwayat order-lihat')
                   <li>
                     <a href="{{ route('dashboard.order.order_history') }}"
@@ -108,7 +115,7 @@
                   </li>
                 @endcan
               </ul>
-            </li>
+            </li> --}}
           {{-- @endcanany --}}
           {{-- END ORDER --}}
 
@@ -180,6 +187,14 @@
                     <a href="{{ route('dashboard.master-data.uom') }}"
                       class="flex sidebar_base pl-11 group {{ str_contains(Request::route()->getName(), 'dashboard.master-data.uom') ? 'active_sidebar' : '' }}">
                       Satuan Produk
+                    </a>
+                  </li>
+                {{-- @endcan --}}
+                {{-- @can('master data-produk kategori-lihat') --}}
+                  <li>
+                    <a href="{{ route('dashboard.master-data.payment-method') }}"
+                      class="flex sidebar_base pl-11 group {{ str_contains(Request::route()->getName(), 'dashboard.master-data.payment-method') ? 'active_sidebar' : '' }}">
+                      Metode Pembayaran
                     </a>
                   </li>
                 {{-- @endcan --}}

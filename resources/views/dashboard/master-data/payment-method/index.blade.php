@@ -14,12 +14,19 @@
             <li>
               <div class="flex items-center">
                 <x-fas-chevron-right class="h-3 w-3 text-gray-400" />
-                <span class="ml-1 text-gray-400 md:ml-2" aria-current="page">Order Aktif</span>
+                <span class="ml-1 text-gray-400 md:ml-2" aria-current="page">Master
+                  Data</span>
+              </div>
+            </li>
+            <li>
+              <div class="flex items-center">
+                <x-fas-chevron-right class="h-3 w-3 text-gray-400" />
+                <span class="ml-1 text-gray-400 md:ml-2" aria-current="page">Metode Pembayaran</span>
               </div>
             </li>
           </ol>
         </nav>
-        <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl">Order Aktif</h1>
+        <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl">Metode Pembayaran</h1>
       </div>
     </div>
 
@@ -37,14 +44,12 @@
     <div class="p-4 bg-white rounded-lg shadow-lg 2xl:col-span-2 sm:p-6 mb-4">
       <div class="block items-center justify-between sm:flex md:divide-x md:divide-gray-100 mb-4">
         <div class="mb-4 flex items-center sm:mb-0">
-          <form class="sm:pr-3" action="{{ route('dashboard.order') }}" method="GET" id="form-search">
-            <label for="products-search" class="sr-only">Search</label>
+          <form class="sm:pr-3" action="{{ route('dashboard.master-data.payment-method') }}" method="GET">
+            <label for="payment-methods-search" class="sr-only">Search</label>
             <div class="relative mt-1 w-48 sm:w-64 xl:w-96">
-              <input type="date" name="periode" id="order-search"
+              <input type="text" name="search" id="payment-methods-search"
                 class="block w-full rounded-lg border border-gray-300 p-2.5 text-gray-900 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                value="{{ Request::get('periode') ? Request::get('periode') : Date::now()->format('Y-m-d') }}"
-                onchange="change_search()"
-                max="{{ Carbon\Carbon::now()->format('Y-m-d') }}">
+                placeholder="Cari Metode Pembayaran" @if (isset($_GET['search'])) value="{{ $_GET['search'] }}" @endif>
             </div>
           </form>
           {{-- <div class="flex w-full items-center sm:justify-end">
@@ -57,10 +62,10 @@
           </div> --}}
         </div>
         {{-- @can('master data-produk-tambah') --}}
-          <a id="createProductButton"
+          <a id="createPaymentMethodButton"
             class="rounded-lg shadow-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-primary-300"
-            href="{{ route('dashboard.order.create') }}">
-            Tambahkan Order Baru
+            href="{{ route('dashboard.master-data.payment-method.create') }}">
+            Tambahkan Metode Baru
           </a>
         {{-- @endcan --}}
       </div>
@@ -78,20 +83,8 @@
                         <label for="checkbox-all" class="sr-only">checkbox</label>
                       </div>
                     </th>
-                    <th scope="col" class="p-4 text-left text-base font-bold uppercase text-white">
-                      Order ID
-                    </th>
-                    <th scope="col" class="p-4 text-left text-base font-bold uppercase text-white">
-                      Waktu
-                    </th>
-                    <th scope="col" class="p-4 text-left text-base font-bold uppercase text-white">
-                      Kasir
-                    </th>
-                    <th scope="col" class="p-4 text-left text-base font-bold uppercase text-white">
-                      Metode Pembayaran
-                    </th>
-                    <th scope="col" class="p-4 text-right text-base font-bold uppercase text-white">
-                      Total
+                    <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                      Nama Metode
                     </th>
                     <th scope="col" class="p-4 text-center text-base font-bold uppercase text-white">
                       Aksi
@@ -109,69 +102,39 @@
                         </div>
                       </td>
                       <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                        <p class="text-sm font-normal text-gray-900">{{ $item->id_order }}
-                        </p>
-                      </td>
-                      <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                        <p class="text-sm font-normal text-gray-900">{{ $item->date_time }}
-                        </p>
-                      </td>
-                      <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                        <p class="text-sm font-normal text-gray-900">{{ $item->User->name }}
-                        </p>
-                      </td>
-                      <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                        <p class="text-sm font-normal text-gray-900">{{ $item->payment_method }}
-                        </p>
-                      </td>
-                      <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                        <p class="text-sm font-normal text-gray-900">{{ format_rupiah($item->total_payment) }}
+                        <p class="text-sm font-normal text-gray-900">{{ $item->name }}
                         </p>
                       </td>
                       <td class="text-center space-x-2 whitespace-nowrap p-4">
                         {{-- @can('master data-produk-perbarui') --}}
-                          {{-- <a href="{{ route('dashboard.product.edit', ['id' => $item->id]) }}"
-                            id="updateProductButton" data-drawer-target="drawer-update-product-default"
-                            data-drawer-show="drawer-update-product-default" aria-controls="drawer-update-product-default"
+                          <a href="{{ route('dashboard.master-data.payment-method.edit', ['id' => $item->id]) }}"
+                            id="updatePaymentMethodButton" data-drawer-target="drawer-update-payment-method-default"
+                            data-drawer-show="drawer-update-payment-method-default" aria-controls="drawer-update-payment-method-default"
                             data-drawer-placement="right"
                             class="inline-flex items-center rounded-lg bg-blue-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-primary-300">
                             <x-fas-edit class="mr-2 h-4 w-4" />
                             Perbarui
-                          </a> --}}
+                          </a>
                         {{-- @endcan --}}
                         {{-- @can('master data-produk-hapus') --}}
-                          {{-- <button type="button" id="deleteProductButton"
-                            data-drawer-target="drawer-delete-product-default"
-                            data-drawer-show="drawer-delete-product-default" aria-controls="drawer-delete-product-default"
+                          <button type="button" id="deletePaymentMethodButton"
+                            data-drawer-target="drawer-delete-payment-method-default"
+                            data-drawer-show="drawer-delete-payment-method-default" aria-controls="drawer-delete-payment-method-default"
                             data-drawer-placement="right"
                             class="inline-flex items-center rounded-lg bg-red-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-red-800 focus:ring-4 focus:ring-red-300"
                             data-id="{{ $item->id }}">
                             <x-fas-trash-alt class="mr-2 h-4 w-4" />
                             Hapus
-                          </button> --}}
+                          </button>
                         {{-- @endcan --}}
                       </td>
                     </tr>
                   @empty
                     <tr>
-                      <td class="text-center text-base font-light p-4" colspan="8">Data Kosong</td>
+                      <td class="text-center text-base font-light p-4" colspan="3">Data Kosong</td>
                     </tr>
                   @endforelse
                 </tbody>
-                <tfoot class="bg-sky-300">
-                  <tr>
-                    <th scope="col" colspan="2s"
-                      class="p-4 text-left text-base font-bold uppercase text-white">
-                      Jumlah Total
-                    </th>
-                    <th scope="col" colspan="4"
-                      class="p-4 text-right text-base font-bold uppercase text-white">
-                      {{ format_rupiah($total) }}
-                    </th>
-                    <th scope="col" class="p-4 text-right text-base font-bold uppercase text-white">
-                    </th>
-                  </tr>
-                </tfoot>
               </table>
             </div>
           </div>
@@ -184,14 +147,14 @@
       </div>
     </div>
 
-    <!-- Delete Product Drawer -->
-    <div id="drawer-delete-product-default"
+    <!-- Delete Payment Method Drawer -->
+    <div id="drawer-delete-payment-method-default"
       class="fixed right-0 top-0 z-40 h-screen w-full max-w-xs translate-x-full overflow-y-auto bg-white p-4 transition-transform"
       tabindex="-1" aria-labelledby="drawer-label" aria-hidden="true">
       <h5 id="drawer-label" class="inline-flex items-center text-sm font-semibold uppercase text-gray-500">Hapus Data
       </h5>
-      <button type="button" data-drawer-dismiss="drawer-delete-product-default"
-        aria-controls="drawer-delete-product-default"
+      <button type="button" data-drawer-dismiss="drawer-delete-payment-method-default"
+        aria-controls="drawer-delete-payment-method-default"
         class="absolute right-2.5 top-2.5 inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900">
         <x-fas-info-circle aria-hidden="true" class="h-5 w-5" />
         <span class="sr-only">Tutup</span>
@@ -208,7 +171,7 @@
         </button>
         <button type="button"
           class="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-center text-sm font-medium text-gray-900 hover:bg-gray-100 focus:ring-4 focus:ring-primary-300"
-          data-drawer-hide="drawer-delete-product-default">
+          data-drawer-hide="drawer-delete-payment-method-default">
           Tidak, Batalkan
         </button>
       </form>
@@ -221,7 +184,7 @@
     window.onload = () => {
       document.addEventListener('click', async (event) => {
         // DELETE DATA
-        if (event.target.getAttribute('data-drawer-target') == "drawer-delete-product-default") {
+        if (event.target.getAttribute('data-drawer-target') == "drawer-delete-payment-method-default") {
           const id = event.target.getAttribute("data-id");
           document.querySelector("#delete-id").value = id;
         }
@@ -229,16 +192,10 @@
           const id = document.querySelector("#delete-id").value;
           document.querySelector("#form-delete").method = "POST";
           document.querySelector("#form-delete").action =
-            `/dashboard/product/${id}`;
+            `/dashboard/master-data/payment-method/${id}`;
           document.querySelector("#form-delete").submit();
         }
       })
-    }
-
-    function change_search() {
-      let value = document.querySelector("#order-search").value;
-      document.querySelector("#form-search").action = `/dashboard/order`;
-      document.querySelector("#form-search").submit();
     }
   </script>
 @endpush

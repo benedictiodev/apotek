@@ -6,16 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Order extends Model
+class MasterPaymentMethod extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = 'orders';
+    protected $table = 'master_payment_methods';
     protected $guarded = ['id'];
-
-    public function User()
-    {
-        return $this->belongsTo(User::class, 'cashier_id');
-    }
 }

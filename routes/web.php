@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MasterData\CustomerController;
 use App\Http\Controllers\MasterData\EmployeeController;
+use App\Http\Controllers\MasterData\PaymentMethodController;
 use App\Http\Controllers\MasterData\ProductCategoryController;
 use App\Http\Controllers\MasterData\SalesController;
 use App\Http\Controllers\MasterData\SupplierController;
@@ -49,6 +50,7 @@ Route::prefix("/dashboard")->middleware([
     Route::prefix("/order")->group(function () {
         Route::get("/", [OrderController::class, 'index'])->name('dashboard.order');
         Route::get("/create", [OrderController::class, 'create'])->name('dashboard.order.create');
+        Route::post("/store", [OrderController::class, 'store'])->name('dashboard.order.store');
     });
 
     Route::prefix("/master-data")->group(function () {
@@ -99,6 +101,14 @@ Route::prefix("/dashboard")->middleware([
             Route::get("/{id}/edit", [EmployeeController::class, 'edit'])->name('dashboard.master-data.employee.edit');
             Route::put("/{id}/update", [EmployeeController::class, 'update'])->name('dashboard.master-data.employee.update');
             Route::delete('/{id}', [EmployeeController::class, 'destroy'])->name('dashboard.master-data.employee.delete');
+        });
+        Route::prefix("/payment-method")->group(function () {
+            Route::get("/", [PaymentMethodController::class, 'index'])->name('dashboard.master-data.payment-method');
+            Route::get("/create", [PaymentMethodController::class, 'create'])->name('dashboard.master-data.payment-method.create');
+            Route::post("/store", [PaymentMethodController::class, 'store'])->name('dashboard.master-data.payment-method.store');
+            Route::get("/{id}/edit", [PaymentMethodController::class, 'edit'])->name('dashboard.master-data.payment-method.edit');
+            Route::put("/{id}/update", [PaymentMethodController::class, 'update'])->name('dashboard.master-data.payment-method.update');
+            Route::delete('/{id}', [PaymentMethodController::class, 'destroy'])->name('dashboard.master-data.payment-method.delete');
         });
     });
 });
