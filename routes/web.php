@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CashFlowController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MasterData\CustomerController;
 use App\Http\Controllers\MasterData\EmployeeController;
@@ -51,6 +52,11 @@ Route::prefix("/dashboard")->middleware([
         Route::get("/", [OrderController::class, 'index'])->name('dashboard.order');
         Route::get("/create", [OrderController::class, 'create'])->name('dashboard.order.create');
         Route::post("/store", [OrderController::class, 'store'])->name('dashboard.order.store');
+    });
+
+    Route::prefix("/finance")->group(function () {
+        Route::get("/cash-flow-daily", [CashFlowController::class, 'list_daily'])->name('dashboard.finance.cash-flow-daily');
+        Route::get("/cash-flow-monthly", [CashFlowController::class, 'list_monthly'])->name('dashboard.finance.cash-flow-monthly');
     });
 
     Route::prefix("/master-data")->group(function () {
