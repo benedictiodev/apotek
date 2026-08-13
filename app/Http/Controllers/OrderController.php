@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ProductDetail;
+use App\Services\ThermalPrinter\ThermalPrinterService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -18,7 +19,14 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    public function index(Request $request) {
+    public function __construct(protected ThermalPrinterService $thermalPrinterService)
+    {
+        $this->thermalPrinterService = $thermalPrinterService;
+    }
+
+
+    public function index(Request $request)
+    {
         // $data = Order::query()
         //     ->with(['User'])
         //     ->where('company_id', Auth::user()->company_id);
@@ -45,7 +53,8 @@ class OrderController extends Controller
         ]);
     }
 
-    public function create() {
+    public function create()
+    {
         $customers = MasterCustomer::query()
             ->where('company_id', Auth::user()->company_id)
             ->get();
@@ -60,7 +69,8 @@ class OrderController extends Controller
         ]);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         try {
             $validate = $request->validate([
                 'total_price_item' => 'required',
@@ -70,6 +80,7 @@ class OrderController extends Controller
                 'payment' => 'required',
                 'change' => 'required',
                 'payment_method' => 'required',
+                'is_print' => 'nullable|integer|in:0,1',
             ]);
 
             $data_order = Order::where('company_id', Auth::user()->company_id)
@@ -180,6 +191,12 @@ class OrderController extends Controller
 
             if ($store) {
                 DB::commit();
+
+                if ($validate['is_print']) {
+                    $order = Order::query()->with(["User", "Orders", "Orders.Product"])->findOrFail($store->id);
+                    $this->thermalPrinterService->print($order);
+                }
+
                 return redirect()->route('dashboard.order')->with('success', "Berhasil menambahkan data order");
             } else {
                 DB::rollBack();

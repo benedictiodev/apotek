@@ -34,12 +34,12 @@ class ThermalPrinterService
             $printer->feed();
             $printer->text($this->separator());
 
-            foreach ($order->products as $key => $value) {
+            foreach ($order->orders as $key => $value) {
                 $printer->text($value->product->name);
                 $printer->feed();
 
                 $p = number_format($value->price, 0, ',', '.');
-                $q = $value->quantity . " " . $value->uom->name . "@$p";
+                $q = $value->quantity . " " . $value->uom . "@$p";
                 $t = number_format($value->total_price, 0, ',', '.');
 
                 $detailOrder = $this->columnify($q, $t);
@@ -48,8 +48,11 @@ class ThermalPrinterService
                 if ($value->discount != 0) {
                     $d = number_format($value->total_discount, 0, ',', '.');
                     $a = number_format($value->amount, 0, ',', '.');
-                    $printer->text($this->columnify("Disc. ({$value->discount}%) $d", $a));
+                    // $printer->text($this->columnify("Disc. ({$value->discount}%) $d", $a));
+                    $printer->setJustification(Printer::JUSTIFY_RIGHT);
+                    $printer->text("Disc. ({$value->discount}%) $d");
                 }
+                $printer->initialize();
             }
 
             $total_price_item = "Rp. " . number_format($order->total_price_item, 0, ',', '.');

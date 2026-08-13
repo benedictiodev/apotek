@@ -18,4 +18,9 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'cashier_id');
     }
+
+    public function Orders()
+    {
+        return $this->hasMany(OrderDetail::class, 'order_id', 'id');
+    }
 }
