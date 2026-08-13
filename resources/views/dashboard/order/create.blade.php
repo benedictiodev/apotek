@@ -38,11 +38,16 @@
                 placeholder="Cari Data Product" autofocus>
             </form>
           </div>
-          <button data-modal-target="modal-order" data-modal-toggle="modal-order" type="button"
-            onclick="open_modal_confirm_order()"
-            class="w-fit shadow-lg justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300">
-            Konfirmasi Pembayaran
-          </button>
+          <div class="flex gap-2">
+            <input type="text" id="confirm-total_payment" value="Rp. 0"
+                class="flex-6 block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-gray-900 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                disabled>
+            <button data-modal-target="modal-order" data-modal-toggle="modal-order" type="button"
+              onclick="open_modal_confirm_order()"
+              class="flex-6 w-fit shadow-lg justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300">
+              Konfirmasi Pembayaran
+            </button>
+          </div>
         </div>
 
         <form action="{{ route('dashboard.order.store') }}" method="POST" enctype="multipart/form-data" id="form-order">
@@ -70,11 +75,17 @@
                           <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="15%">
                             Harga
                           </th>
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="15%">
+                            Total
+                          </th>
                           <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="12%">
                             Diskon (%)
                           </th>
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="12%">
+                            Total Diskon
+                          </th>
                           <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white" width="15%">
-                            Total
+                            Total Harga
                           </th>
                         </tr>
                       </thead>
@@ -170,6 +181,26 @@
                           id="total_discount"
                           class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                           placeholder="Total Diskon" readonly>
+                      </div>
+                    </div>
+                    <div class="mb-3 flex justify-between">
+                      <div class="w-1/3 mr-2">
+                        <label for="tax" class="mb-2 block text-sm font-medium text-gray-900">
+                          PPN (%)  
+                        </label>
+                        <input type="text" min="0" name="tax"
+                          id="tax"
+                          class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                          placeholder="PPN" onkeyup="change_tax()" value="0">
+                      </div>
+                      <div class="w-2/3 ml-2">
+                        <label for="total_tax" class="mb-2 block text-sm font-medium text-gray-900">
+                          Total PPN
+                        </label>
+                        <input type="text" min="0" name="total_tax"
+                          id="total_tax"
+                          class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                          placeholder="Total PPN" readonly>
                       </div>
                     </div>
                     <div class="mb-3">
@@ -286,6 +317,19 @@
     let modalProducts = [];
     let selectedProductIndex = 0;
 
+    const updateConfirmTotalPayment = () => {
+      if (sequence > 0) {
+        let totalPrice = 0;
+        $('[id^="total_price-"]').each(function () {
+          totalPrice += update_to_number($(this).val());
+        });
+
+        $('#confirm-total_payment').val('Rp. ' + update_to_format_rupiah(totalPrice));
+      } else {
+        $('#confirm-total_payment').val(0);
+      }
+    }
+
     window.selectProductFromModal = (index) => {
       const product = modalProducts[index];
 
@@ -349,7 +393,10 @@
       const discount = document.getElementById(`discount-${sequenceNumber}`).value;
 
       const totalPrice = price * quantity;
+      document.getElementById(`total_base_price-${sequenceNumber}`).value = update_to_format_rupiah(totalPrice);
+      document.getElementById(`total_discount_price-${sequenceNumber}`).value = update_to_format_rupiah(totalPrice * discount / 100);
       document.getElementById(`total_price-${sequenceNumber}`).value = update_to_format_rupiah(totalPrice - (totalPrice * discount / 100));
+      updateConfirmTotalPayment();
     }
 
     const updateUom = (event, sequenceNumber) => {
@@ -358,12 +405,15 @@
       const dataProductDetail = dataProductSelected.find(item => item.id == value);
 
       const quantity = document.getElementById(`quantity-${sequenceNumber}`).value;
-      document.getElementById(`uom_id-${sequenceNumber}`).value = value;
+      document.getElementById(`product_detail_id-${sequenceNumber}`).value = value;
       document.getElementById(`price-${sequenceNumber}`).value = update_to_format_rupiah(dataProductDetail.price);
       document.getElementById(`discount-${sequenceNumber}`).value = dataProductDetail.discount;
 
       const totalPrice = dataProductDetail.price * quantity;
+      document.getElementById(`total_base_price-${sequenceNumber}`).value = update_to_format_rupiah(totalPrice);
+      document.getElementById(`total_discount_price-${sequenceNumber}`).value = update_to_format_rupiah(totalPrice * dataProductDetail.discount / 100);
       document.getElementById(`total_price-${sequenceNumber}`).value = update_to_format_rupiah(totalPrice - (totalPrice * dataProductDetail.discount / 100));
+      updateConfirmTotalPayment();
     }
 
     const addProductToOrder = (data) => {
@@ -399,13 +449,13 @@
               placeholder="jumlah">
           </td>
           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            <input type="text" name="uom_id[${sequence}]" id="uom_id-${sequence}" onkeyup="updateDataItem(${sequence})"
+            <input type="text" name="product_detail_id[${sequence}]" id="product_detail_id-${sequence}" onkeyup="updateDataItem(${sequence})"
               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              value="${data.product_detail[0].uom_id}" hidden>
-            <select id="select_uom-${sequence}" name="select_uom[${sequence}]"
+              value="${data.product_detail[0].id}" hidden>
+            <select id="select_product_id-${sequence}" name="select_product_id[${sequence}]"
               class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               onchange="updateUom(this, ${sequence})"
-              >
+            >
               ${uomOptions}
             </select>
           </td>
@@ -415,13 +465,23 @@
               placeholder="Harga" value="${update_to_format_rupiah(data.product_detail[0].price)}">
           </td>
           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+            <input type="text" name="total_base_price[${sequence}]" id="total_base_price-${sequence}"
+              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+              placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price)}">
+          </td>
+          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
             <input type="number" min="0" name="discount[${sequence}]" id="discount-${sequence}" oninput="updateDataItem(${sequence})"
               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
               placeholder="Diskon" value="${data.product_detail[0].discount}">
           </td>
           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+            <input type="text" name="total_discount_price[${sequence}]" id="total_discount_price-${sequence}"
+              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+              placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price)}">
+          </td>
+          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
             <input type="text" name="total_price[${sequence}]" id="total_price-${sequence}"
-              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
               placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price - (data.product_detail[0].price * data.product_detail[0].discount / 100))}">
           </td>
         </tr>
@@ -431,6 +491,7 @@
 
       updateDataItem(sequence);
       sequence++;
+      updateConfirmTotalPayment();
     }
 
     const searchProduct = async (event) => {
@@ -522,15 +583,35 @@
     const change_discount = () => {
       let total_price_item = parseInt(($('#total_price_item').val()).replaceAll('.', ''));
       let payment = parseInt(($('#payment').val()).replaceAll('.', ''));
+      let tax = parseInt(($('#total_tax').val()).replaceAll('.', ''));
+      tax = isNaN(tax) ? 0 : tax;
       let discount = parseInt(($('#discount').val()).replaceAll('.', ''));
       discount = discount ? (discount > 100 ? 100 : discount) : 0;
-      let total_discount = (Number(total_price_item) * Number(discount)) / 100;
-      let total_payment = Number(total_price_item) - Number(total_discount);
+      let total_discount = Math.ceil((Number(total_price_item) * Number(discount)) / 100);
+      let total_payment = Number(total_price_item) - Number(total_discount) - tax;
 
       $('#total_discount').val(update_to_format_rupiah(total_discount));
       $('#discount').val(update_to_format_rupiah(discount));
       $('#total_payment').val(update_to_format_rupiah(total_payment));
       $('#change').val(update_to_format_rupiah(payment > 0 ? payment - total_payment : 0));
+    }
+
+    const change_tax = () => {
+      let total_price_item = parseInt(($('#total_price_item').val()).replaceAll('.', ''));
+      let payment = parseInt(($('#payment').val()).replaceAll('.', ''));
+      let discount = parseInt(($('#total_discount').val()).replaceAll('.', ''));
+      discount = isNaN(discount) ? 0 : discount;
+      let total_payment = Number(total_price_item) - Number(discount);
+      let tax = parseInt(($('#tax').val()).replaceAll('.', ''));
+      tax = tax ? (tax > 100 ? 100 : tax) : 0;
+      let total_tax = Math.ceil((total_payment * Number(tax)) / 100);
+
+      let total_payment_after_tax = total_payment - total_tax;
+
+      $('#total_tax').val(update_to_format_rupiah(total_tax));
+      $('#tax').val(update_to_format_rupiah(tax));
+      $('#total_payment').val(update_to_format_rupiah(total_payment_after_tax));
+      $('#change').val(update_to_format_rupiah(payment > 0 ? payment - total_payment_after_tax : 0));
     }
 
     const count_change_payment = () => {

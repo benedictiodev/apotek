@@ -8,6 +8,8 @@ use App\Models\MasterCustomer;
 use App\Models\MasterPaymentMethod;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Product;
+use App\Models\ProductDetail;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -63,6 +65,7 @@ class OrderController extends Controller
             $validate = $request->validate([
                 'total_price_item' => 'required',
                 'discounts' => 'required',
+                'tax' => 'required',
                 'total_payment' => 'required',
                 'payment' => 'required',
                 'change' => 'required',
@@ -77,6 +80,48 @@ class OrderController extends Controller
             $id_order = Carbon::now()->format('Ymd') . str_pad($next_sequence, 4, '0', STR_PAD_LEFT);;
 
             DB::beginTransaction();
+
+            $totalProfit = 0;
+            $InsertToOrderDetail = [];
+            foreach ($request->product_id as $key => $item) {
+                $dataProductDetail = ProductDetail::with(['Uom'])
+                    ->where('id', $request->product_detail_id[$key])
+                    ->first();
+
+                $totalPrice = ((int) str_replace('.', '', $request->price[$key])) * $request->quantity[$key];
+                $quantityOnBaseUom = $request->quantity[$key] * $dataProductDetail->contains;
+                $amount = (int) str_replace('.', '', $request->total_price[$key]);
+                $totalDiscountOrder = $amount * ($validate['discounts'] ?? 0) / 100;
+                $fixAmount = $amount - $totalDiscountOrder;
+                $basePrice = $dataProductDetail->price & $request->quantity[$key];
+
+                $InsertToOrderDetail[] = [
+                    'product_id' => $item,
+                    'product_detail_id' => $request->product_detail_id[$key],
+                    'uom' => $dataProductDetail->Uom->name,
+                    'quantity_on_base_uom' => $quantityOnBaseUom,
+                    'price' => (int) str_replace('.', '', $request->price[$key]),
+                    'quantity' => $request->quantity[$key],
+                    'total_price' => $totalPrice,
+                    'discount' => $request->discount[$key] ?? 0,
+                    'total_discount' => $totalPrice * ($request->discount[$key] ?? 0) / 100,
+                    'amount' => $amount,
+                    'discount_order' => $validate['discounts'] ?? 0,
+                    'total_discount_order' => $totalDiscountOrder,
+                    'fix_amount' => $fixAmount,
+                    'base_price' => $basePrice,
+                    'profit' => $fixAmount - $basePrice,
+                ];
+
+                $totalProfit += $fixAmount - $basePrice;
+
+                $dataProduct = Product::where('id', $item)->first();
+                Product::where('id', $item)
+                    ->update([
+                        'stock' => $dataProduct->stock - $quantityOnBaseUom,
+                    ]);
+            }
+
             $store = Order::create([
                 'id_order' => $id_order,
                 'sequence' => $next_sequence,
@@ -86,28 +131,21 @@ class OrderController extends Controller
                 'total_price_item' => (int) str_replace('.', '', $validate['total_price_item']),
                 'discount' => $validate['discounts'] ?? 0,
                 'total_discount' => (int) str_replace('.', '', $request->total_discounts ?? 0),
+                'tax' => $validate['tax'] ?? 0,
+                'total_tax' => (int) str_replace('.', '', $request->total_tax ?? 0),
                 'total_payment' => (int) str_replace('.', '', $validate['total_payment']),
                 'payment' => (int) str_replace('.', '', $validate['payment']),
                 'change' => (int) str_replace('.', '', $validate['change']),
+                'profit' => $totalProfit,
                 'payment_method' => $validate['payment_method'],
                 'status' => 'done',
                 'remarks' => '',
                 'company_id' => Auth::user()->company_id,
             ]);
 
-            foreach ($request->product_id as $key => $item) {
-                $totalPrice = ((int) str_replace('.', '', $request->price[$key])) * $request->quantity[$key];
-                $storeDetail = OrderDetail::create([
-                    'product_id' => $item,
-                    'uom_id' => $request->uom_id[$key],
-                    'price' => (int) str_replace('.', '', $request->price[$key]),
-                    'quantity' => $request->quantity[$key],
-                    'discount' => $request->discount[$key] ?? 0,
-                    'total_price' => $totalPrice,
-                    'total_discount' => $totalPrice * ($request->discount[$key] ?? 0) / 100,
-                    'amount' => (int) str_replace('.', '', $request->total_price[$key]),
-                    'order_id' => $store->id,
-                ]);
+            foreach ($InsertToOrderDetail as $dataOrderDetail) {
+                $dataOrderDetail['order_id'] = $store->id;
+                $storeDetail = OrderDetail::create($dataOrderDetail);
             }
 
             CashIn::create([

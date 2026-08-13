@@ -21,9 +21,12 @@ return new class extends Migration
             $table->bigInteger('total_price_item');
             $table->float('discount');
             $table->bigInteger('total_discount');
+            $table->float('tax');
+            $table->bigInteger('total_tax');
             $table->bigInteger('total_payment');
             $table->bigInteger('payment');
             $table->bigInteger('change');
+            $table->bigInteger('profit');
             $table->string('payment_method');
             $table->string('status');
             $table->text('remarks');
