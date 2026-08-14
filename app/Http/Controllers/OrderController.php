@@ -98,13 +98,14 @@ class OrderController extends Controller
                 $dataProductDetail = ProductDetail::with(['Uom'])
                     ->where('id', $request->product_detail_id[$key])
                     ->first();
+                $dataProduct = Product::where('id', $item)->first();
 
                 $totalPrice = ((int) str_replace('.', '', $request->price[$key])) * $request->quantity[$key];
                 $quantityOnBaseUom = $request->quantity[$key] * $dataProductDetail->contains;
                 $amount = (int) str_replace('.', '', $request->total_price[$key]);
                 $totalDiscountOrder = $amount * ($validate['discounts'] ?? 0) / 100;
                 $fixAmount = $amount - $totalDiscountOrder;
-                $basePrice = $dataProductDetail->price & $request->quantity[$key];
+                $basePrice = $dataProduct->purchase_price & $quantityOnBaseUom;
 
                 $InsertToOrderDetail[] = [
                     'product_id' => $item,
@@ -126,7 +127,6 @@ class OrderController extends Controller
 
                 $totalProfit += $fixAmount - $basePrice;
 
-                $dataProduct = Product::where('id', $item)->first();
                 Product::where('id', $item)
                     ->update([
                         'stock' => $dataProduct->stock - $quantityOnBaseUom,
