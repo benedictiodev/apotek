@@ -193,7 +193,7 @@ class OrderController extends Controller
             if ($store) {
                 DB::commit();
 
-                if ($validate['is_print']) {
+                if (($validate['is_print'] ?? 0) == 1) {
                     $order = Order::query()->with(["User", "Orders", "Orders.Product"])->findOrFail($store->id);
                     $this->thermalPrinterService->print($order);
                 }
