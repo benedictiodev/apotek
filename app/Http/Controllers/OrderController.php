@@ -121,7 +121,8 @@ class OrderController extends Controller
                     'discount_order' => $validate['discounts'] ?? 0,
                     'total_discount_order' => $totalDiscountOrder,
                     'fix_amount' => $fixAmount,
-                    'base_price' => $basePrice,
+                    'base_price' => $dataProductDetail->price,
+                    'purchase_price' => $dataProduct->purchase_price,
                     'profit' => $fixAmount - $basePrice,
                 ];
 

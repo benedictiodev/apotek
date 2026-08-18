@@ -28,6 +28,7 @@ return new class extends Migration
             $table->bigInteger('total_discount_order');
             $table->bigInteger('fix_amount');
             $table->bigInteger('base_price');
+            $table->bigInteger('purchase_price');
             $table->bigInteger('profit');
             $table->timestamps();
             $table->softDeletes();
