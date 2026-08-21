@@ -130,14 +130,14 @@
                       </td>
                       <td class="text-center space-x-2 whitespace-nowrap p-4">
                         {{-- @can('master data-produk-perbarui') --}}
-                          {{-- <a href="{{ route('dashboard.product.edit', ['id' => $item->id]) }}"
+                          <a href="{{ route('dashboard.order.detail', ['id' => $item->id]) }}"
                             id="updateProductButton" data-drawer-target="drawer-update-product-default"
                             data-drawer-show="drawer-update-product-default" aria-controls="drawer-update-product-default"
                             data-drawer-placement="right"
                             class="inline-flex items-center rounded-lg bg-blue-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-primary-300">
-                            <x-fas-edit class="mr-2 h-4 w-4" />
-                            Perbarui
-                          </a> --}}
+                            <x-fas-eye class="mr-2 h-4 w-4" />
+                            Detail
+                          </a>
                         {{-- @endcan --}}
                         {{-- @can('master data-produk-hapus') --}}
                           {{-- <button type="button" id="deleteProductButton"

@@ -52,6 +52,7 @@ Route::prefix("/dashboard")->middleware([
         Route::get("/", [OrderController::class, 'index'])->name('dashboard.order');
         Route::get("/create", [OrderController::class, 'create'])->name('dashboard.order.create');
         Route::post("/store", [OrderController::class, 'store'])->name('dashboard.order.store');
+        Route::get("/{id}/show", [OrderController::class, 'showDetailOrder'])->name('dashboard.order.detail');
     });
 
     Route::prefix("/finance")->group(function () {

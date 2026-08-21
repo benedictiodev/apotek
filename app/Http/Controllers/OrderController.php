@@ -121,7 +121,7 @@ class OrderController extends Controller
                     'discount_order' => $validate['discounts'] ?? 0,
                     'total_discount_order' => $totalDiscountOrder,
                     'fix_amount' => $fixAmount,
-                    'base_price' => $dataProductDetail->price,
+                    'base_price' => $basePrice,
                     'purchase_price' => $dataProduct->purchase_price,
                     'profit' => $fixAmount - $basePrice,
                 ];
@@ -165,7 +165,7 @@ class OrderController extends Controller
                 'fund' => (int) str_replace('.', '', $validate['total_payment']),
                 'remark' => null,
                 'date_time' => Carbon::now()->toDateTimeString(),
-                'type' => '',
+                'type' => $validate['payment_method'],
                 'order_id' => $store->id,
                 'remarks_from_master' => null,
             ]);
@@ -208,5 +208,12 @@ class OrderController extends Controller
             throw $error;
             return redirect()->route('dashboard.order')->with('failed', "Gagal menambahkan data order");
         }
+    }
+
+    public function showDetailOrder($id) {
+        $order = Order::where('id', $id)->with(['Orders', 'Orders.Product', 'User', 'Customer'])->first();
+        return view('dashboard.order.detail', [
+            'orders' => $order,
+        ]);
     }
 }

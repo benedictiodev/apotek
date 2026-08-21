@@ -622,7 +622,7 @@
             let discount = parseInt(($('#discount').val()).replaceAll('.', ''));
             discount = discount ? (discount > 100 ? 100 : discount) : 0;
             let total_discount = Math.ceil((Number(total_price_item) * Number(discount)) / 100);
-            let total_payment = Number(total_price_item) - Number(total_discount) - tax;
+            let total_payment = Number(total_price_item) - Number(total_discount) + tax;
 
             $('#total_discount').val(update_to_format_rupiah(total_discount));
             $('#discount').val(update_to_format_rupiah(discount));
@@ -640,7 +640,7 @@
             tax = tax ? (tax > 100 ? 100 : tax) : 0;
             let total_tax = Math.ceil((total_payment * Number(tax)) / 100);
 
-            let total_payment_after_tax = total_payment - total_tax;
+            let total_payment_after_tax = total_payment + total_tax;
 
             $('#total_tax').val(update_to_format_rupiah(total_tax));
             $('#tax').val(update_to_format_rupiah(tax));
