@@ -97,6 +97,7 @@ class CashFlowController extends Controller
         $total_amount = 0;
 
         foreach($data AS $item) {
+            $item->total_amount = $total_amount + $item->amount;
             $total_cash_in += $item->kredit;
             $total_cash_out += $item->debit;
             $total_amount += $item->amount;

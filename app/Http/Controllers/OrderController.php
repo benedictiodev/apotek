@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ProductDetail;
+use App\Models\ProductStock;
 use App\Services\ThermalPrinter\ThermalPrinterService;
 use Carbon\Carbon;
 use Exception;
@@ -110,6 +111,7 @@ class OrderController extends Controller
                 $InsertToOrderDetail[] = [
                     'product_id' => $item,
                     'product_detail_id' => $request->product_detail_id[$key],
+                    'product_stok_id' => $request->batch_id[$key],
                     'uom' => $dataProductDetail->Uom->name,
                     'quantity_on_base_uom' => $quantityOnBaseUom,
                     'price' => (int) str_replace('.', '', $request->price[$key]),
@@ -128,9 +130,10 @@ class OrderController extends Controller
 
                 $totalProfit += $fixAmount - $basePrice;
 
-                Product::where('id', $item)
+                $productStock = ProductStock::where('id', $request->batch_id[$key])->value('stock');
+                ProductStock::where('id', $request->batch_id[$key])
                     ->update([
-                        'stock' => $dataProduct->stock - $quantityOnBaseUom,
+                        'stock' => $productStock - $quantityOnBaseUom,
                     ]);
             }
 
@@ -198,10 +201,10 @@ class OrderController extends Controller
                     $this->thermalPrinterService->print($order);
                 }
 
-                return redirect()->route('dashboard.order')->with('success', "Berhasil menambahkan data order");
+                return redirect()->route('dashboard.order.create')->with('success', "Berhasil menambahkan data order");
             } else {
                 DB::rollBack();
-                return redirect()->route('dashboard.order')->with('failed', "Gagal menambahkan data order");
+                return redirect()->route('dashboard.order.create')->with('failed', "Gagal menambahkan data order");
             }
         } catch (Exception $error) {
             DB::rollBack();
@@ -211,7 +214,7 @@ class OrderController extends Controller
     }
 
     public function showDetailOrder($id) {
-        $order = Order::where('id', $id)->with(['Orders', 'Orders.Product', 'User', 'Customer'])->first();
+        $order = Order::where('id', $id)->with(['Orders', 'Orders.Product', 'Orders.Stock', 'User', 'Customer'])->first();
         return view('dashboard.order.detail', [
             'orders' => $order,
         ]);

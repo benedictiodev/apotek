@@ -21,7 +21,7 @@
         </ol>
       </nav>
       <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl mb-4">Tambahkan Data Produk</h1>
-      <a href="{{ route('dashboard.product') }}"
+      <a href="{{ route('dashboard.product.master') }}"
         class="w-fit shadow-lg justify-center rounded-lg bg-slate-400 px-5 py-1.5 text-center text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300">
         Kembali
       </a>
@@ -30,7 +30,7 @@
     <div
       class="p-4 bg-white rounded-lg shadow-lg 2xl:col-span-2 sm:p-6">
       <div class="mb-4">
-        <form action="{{ route('dashboard.product.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('dashboard.product.master.store') }}" method="POST" enctype="multipart/form-data">
           @csrf
           <div class="space-y-2">
             <div class="flex justify-between gap-4">
@@ -76,13 +76,6 @@
                     @endforeach
                   </select>
                 </div>
-
-                <div>
-                  <label for="purchase_price" class="my-2 block text-sm font-medium text-gray-900">Harga Beli</label>
-                  <input type="text" name="purchase_price" id="purchase_price" onkeyup="keyup_rupiah(this);checkPrice(this)"
-                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                    placeholder="Harga Beli" required>
-                </div>
               </div>
 
               <div class="flex-1">
@@ -100,13 +93,6 @@
                 </div>
 
                 <div>
-                  <label for="stock" class="my-2 block text-sm font-medium text-gray-900">Stok</label>
-                  <input type="number" min="0" name="stock" id="stock"
-                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                    placeholder="Stok" required>
-                </div>
-
-                <div>
                   <label for="stock_minimal" class="my-2 block text-sm font-medium text-gray-900">Stok Minimal</label>
                   <input type="number" min="0" name="stock_minimal" id="stock_minimal"
                     class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
@@ -121,10 +107,10 @@
                 </div>
 
                 <div>
-                  <label for="expired_date" class="my-2 block text-sm font-medium text-gray-900">Tanggal Kadaluarsa</label>
-                  <input type="date" name="expired_date" id="expired_date"
+                  <label for="purchase_price" class="my-2 block text-sm font-medium text-gray-900">Harga Beli</label>
+                  <input type="text" name="purchase_price" id="purchase_price" onkeyup="keyup_rupiah(this);checkPrice(this)"
                     class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                    placeholder="Tanggal Kadaluarsa" required>
+                    placeholder="Harga Beli" required>
                 </div>
               </div>
             </div>
@@ -149,9 +135,9 @@
                           <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
                             Laba (%)
                           </th>
-                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                          {{-- <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
                             Diskon (%)
-                          </th>
+                          </th> --}}
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200 bg-white">
@@ -175,12 +161,11 @@
                               placeholder="Harga Jual" required>
                           </td>
                           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="profit[]" id="profit-1" onkeyup="checkPrice(this)"
-                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                              placeholder="Laba">
-                          </td>
-                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="discount[]" id="discount-1"
+                            <input type="text"" name="profit[]" id="profit-1" 
+                              {{-- onkeyup="checkPrice(this)" --}}
+                              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Laba" readonly>
+                            <input type="number" min="0" name="discount[]" id="discount-1" hidden
                               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Diskon">
                           </td>
@@ -208,12 +193,11 @@
                               placeholder="Harga Jual">
                           </td>
                           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="profit[]" id="profit-2" onkeyup="checkPrice(this)"
-                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                              placeholder="Laba">
-                          </td>
-                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="discount[]" id="discount-2"
+                            <input type="text" name="profit[]" id="profit-2" 
+                              {{-- onkeyup="checkPrice(this)" --}}
+                              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Laba" readonly>
+                            <input type="number" min="0" name="discount[]" id="discount-2" hidden
                               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Diskon">
                           </td>
@@ -241,12 +225,11 @@
                               placeholder="Harga Jual">
                           </td>
                           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="profit[]" id="profit-3" onkeyup="checkPrice(this)"
-                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                              placeholder="Laba">
-                          </td>
-                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="discount[]" id="discount-3"
+                            <input type="text" name="profit[]" id="profit-3" 
+                              {{-- onkeyup="checkPrice(this)" --}}
+                              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Laba" readonly>
+                            <input type="number" min="0" name="discount[]" id="discount-3" hidden
                               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Diskon">
                           </td>
@@ -274,14 +257,91 @@
                               placeholder="Harga Jual">
                           </td>
                           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="profit[]" id="profit-4" onkeyup="checkPrice(this)"
-                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                              placeholder="Laba">
-                          </td>
-                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="discount[]" id="discount-4"
+                            <input type="text" name="profit[]" id="profit-4" 
+                              {{-- onkeyup="checkPrice(this)" --}}
+                              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Laba" readonly>
+                            <input type="number" min="0" name="discount[]" id="discount-4" hidden
                               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Diskon">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col">
+              <div class="overflow-x-auto">
+                <div class="inline-block min-w-full align-middle">
+                  <label for="expired_date" class="mb-2 block text-sm font-medium text-gray-900">Stok</label>
+                  <div class="overflow-hidden shadow rounded-t-lg">
+                    <table class="min-w-full table-fixed divide-y divide-gray-200">
+                      <thead class="bg-sky-300">
+                        <tr>
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                            Batch
+                          </th>
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                            Stok
+                          </th>
+                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                            Tanggal Kadaluarsa
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 bg-white">
+                        <tr>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="text" name="batch[]" id="batch-1"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Batch" required>
+                          </td>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="number" min="0" value="1" name="stock[]" id="stock-1"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Isi" required>
+                          </td>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="date" name="expired_date[]" id="expired_date-1"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Tanggal Kadaluarsa" required>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="text" name="batch[]" id="batch-2"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Batch">
+                          </td>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="number" min="0" name="stock[]" id="stock-2"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Isi">
+                          </td>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="date" name="expired_date[]" id="expired_date-2"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Tanggal Kadaluarsa">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="text" name="batch[]" id="batch-3"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Batch">
+                          </td>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="number" min="0" name="stock[]" id="stock-3"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Isi">
+                          </td>
+                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                            <input type="date" name="expired_date[]" id="expired_date-3"
+                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                              placeholder="Tanggal Kadaluarsa">
                           </td>
                         </tr>
                       </tbody>

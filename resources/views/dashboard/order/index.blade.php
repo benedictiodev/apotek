@@ -37,7 +37,7 @@
     <div class="p-4 bg-white rounded-lg shadow-lg 2xl:col-span-2 sm:p-6 mb-4">
       <div class="block items-center justify-between sm:flex md:divide-x md:divide-gray-100 mb-4">
         <div class="mb-4 flex items-center sm:mb-0">
-          <form class="sm:pr-3" action="{{ route('dashboard.order') }}" method="GET" id="form-search">
+          <form class="sm:pr-3" action="{{ route('dashboard.order.list') }}" method="GET" id="form-search">
             <label for="products-search" class="sr-only">Search</label>
             <div class="relative mt-1 w-48 sm:w-64 xl:w-96">
               <input type="date" name="periode" id="order-search"

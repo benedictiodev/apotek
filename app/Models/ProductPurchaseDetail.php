@@ -4,19 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class OrderDetail extends Model
+class ProductPurchaseDetail extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
-    protected $table = 'order_details';
+    protected $table = 'product_purchase_details';
     protected $guarded = ['id'];
 
-    public function Product()
+    public function Product() 
     {
-        return $this->belongsTo(Product::class, "product_id");
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function Stock()

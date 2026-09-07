@@ -20,7 +20,7 @@
                 </ol>
             </nav>
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl mb-4">Detail Data Order</h1>
-            <a href="{{ route('dashboard.order') }}"
+            <a href="{{ route('dashboard.order.list') }}"
                 class="w-fit shadow-lg justify-center rounded-lg bg-slate-400 px-5 py-1.5 text-center text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300">
                 Kembali
             </a>
@@ -77,6 +77,10 @@
                                                     Nama
                                                 </th>
                                                 <th scope="col"
+                                                    class="p-4 text-start text-base font-bold uppercase text-white">
+                                                    Batch
+                                                </th>
+                                                <th scope="col"
                                                     class="p-4 text-start text-base font-bold uppercase text-white"
                                                     width="10%">
                                                     Jumlah
@@ -91,7 +95,7 @@
                                                     width="15%">
                                                     Harga
                                                 </th>
-                                                <th scope="col"
+                                                {{-- <th scope="col"
                                                     class="p-4 text-start text-base font-bold uppercase text-white"
                                                     width="15%">
                                                     Total
@@ -105,7 +109,7 @@
                                                     class="p-4 text-start text-base font-bold uppercase text-white"
                                                     width="12%">
                                                     Total Diskon
-                                                </th>
+                                                </th> --}}
                                                 <th scope="col"
                                                     class="p-4 text-start text-base font-bold uppercase text-white"
                                                     width="15%">
@@ -123,6 +127,9 @@
                                                         {{ $item->Product->name }}
                                                     </td>
                                                     <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                        {{ $item->Stock->batch }}
+                                                    </td>
+                                                    <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
                                                         {{ $item->quantity }}
                                                     </td>
                                                     <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
@@ -131,7 +138,7 @@
                                                     <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
                                                         {{ format_rupiah($item->price) }}
                                                     </td>
-                                                    <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                    {{-- <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
                                                         {{ format_rupiah($item->total_price) }}
                                                     </td>
                                                     <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
@@ -139,7 +146,7 @@
                                                     </td>
                                                     <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
                                                         {{ format_rupiah($item->total_discount) }}
-                                                    </td>
+                                                    </td> --}}
                                                     <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
                                                         {{ format_rupiah($item->amount) }}
                                                     </td>
@@ -150,37 +157,37 @@
                                             <tr>
                                                 <td class="text-start p-2 text-base font-bold uppercase text-white">
                                                     {{ count($orders->Orders) }} item</td>
-                                                <td colspan="7" class="text-end p-2 text-base font-bold uppercase text-white">Total
+                                                <td colspan="5" class="text-end p-2 text-base font-bold uppercase text-white">Total
                                             </td>
                                                 <td class="text-end p-2 text-base font-bold uppercase text-white">
                                                     {{ format_rupiah($orders->total_price_item) }}</td>
                                                 </tr>
-                                            <tr>
-                                                <td colspan="8" class="text-end p-2 text-base font-bold uppercase text-white">
+                                            {{-- <tr>
+                                                <td colspan="6" class="text-end p-2 text-base font-bold uppercase text-white">
                                                     Diskon</td>
                                                 <td class="text-end p-2 text-base font-bold uppercase text-white">
                                                     {{ format_rupiah($orders->total_discount) }}</td>
                                             </tr>
                                             <tr>
-                                                <td colspan="8" class="text-end p-2 text-base font-bold uppercase text-white">
+                                                <td colspan="6" class="text-end p-2 text-base font-bold uppercase text-white">
                                                     PPN</td>
                                                 <td class="text-end p-2 text-base font-bold uppercase text-white">
                                                     {{ format_rupiah($orders->total_tax) }}</td>
-                                            </tr>
+                                            </tr> --}}
                                             <tr>
-                                                <td colspan="8" class="text-end p-2 text-base font-bold uppercase text-white">
+                                                <td colspan="6" class="text-end p-2 text-base font-bold uppercase text-white">
                                                     Total Pembayaran</td>
                                                 <td class="text-end p-2 text-base font-bold uppercase text-white">
                                                     {{ format_rupiah($orders->total_payment) }}</td>
                                             </tr>
                                             <tr>
-                                                <td colspan="8" class="text-end p-2 text-base font-bold uppercase text-white">
+                                                <td colspan="6" class="text-end p-2 text-base font-bold uppercase text-white">
                                                     {{ $orders->payment_method }}</td>
                                                 <td class="text-end p-2 text-base font-bold uppercase text-white">
                                                     {{ format_rupiah($orders->payment) }}</td>
                                             </tr>
                                             <tr>
-                                                <td colspan="8" class="text-end p-2 text-base font-bold uppercase text-white">
+                                                <td colspan="6" class="text-end p-2 text-base font-bold uppercase text-white">
                                                     Kembalian</td>
                                                 <td class="text-end p-2 text-base font-bold uppercase text-white">
                                                     {{ format_rupiah($orders->change) }}</td>

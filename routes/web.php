@@ -39,17 +39,24 @@ Route::prefix("/dashboard")->middleware([
     });
 
     Route::prefix("/product")->group(function () {
-        Route::get("/", [ProductController::class, 'index'])->name('dashboard.product');
-        Route::get("/create", [ProductController::class, 'create'])->name('dashboard.product.create');
-        Route::post("/store", [ProductController::class, 'store'])->name('dashboard.product.store');
-        Route::get("/{id}/edit", [ProductController::class, 'edit'])->name('dashboard.product.edit');
-        Route::put("/{id}/update", [ProductController::class, 'update'])->name('dashboard.product.update');
-        Route::delete("/{id}", [ProductController::class, 'destroy'])->name('dashboard.product.delete');
+        Route::get("/", [ProductController::class, 'index'])->name('dashboard.product.master');
+        Route::get("/create", [ProductController::class, 'create'])->name('dashboard.product.master.create');
+        Route::post("/store", [ProductController::class, 'store'])->name('dashboard.product.master.store');
+        Route::get("/{id}/detail", [ProductController::class, 'show'])->name('dashboard.product.master.detail');
+        Route::get("/{id}/edit", [ProductController::class, 'edit'])->name('dashboard.product.master.edit');
+        Route::put("/{id}/update", [ProductController::class, 'update'])->name('dashboard.product.master.update');
+        Route::delete("/{id}", [ProductController::class, 'destroy'])->name('dashboard.product.master.delete');
         Route::get("/search", [ProductController::class, 'search'])->name('dashboard.product.search');
+        Route::prefix("/purchase")->group(function () {
+            Route::get("/", [ProductController::class, 'indexPurchase'])->name('dashboard.product.purchase');
+            Route::post("/store", [ProductController::class, 'StorePurchase'])->name('dashboard.product.purchase.store');
+            Route::get("/{id}/show", [ProductController::class, 'ShowPurchase'])->name('dashboard.product.purchase.show');
+            Route::delete("/{id}", [ProductController::class, 'DeleteDetailPurchase'])->name('dashboard.product.purchase.delete.detail');
+        });
     });
 
     Route::prefix("/order")->group(function () {
-        Route::get("/", [OrderController::class, 'index'])->name('dashboard.order');
+        Route::get("/", [OrderController::class, 'index'])->name('dashboard.order.list');
         Route::get("/create", [OrderController::class, 'create'])->name('dashboard.order.create');
         Route::post("/store", [OrderController::class, 'store'])->name('dashboard.order.store');
         Route::get("/{id}/show", [OrderController::class, 'showDetailOrder'])->name('dashboard.order.detail');

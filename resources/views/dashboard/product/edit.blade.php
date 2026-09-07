@@ -21,7 +21,7 @@
         </ol>
       </nav>
       <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl mb-4">Pembaruan Data Produk</h1>
-      <a href="{{ route('dashboard.product') }}"
+      <a href="{{ route('dashboard.product.master.detail', ['id' => request()->route('id')]) }}"
         class="w-fit shadow-lg justify-center rounded-lg bg-slate-400 px-5 py-1.5 text-center text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300">
         Kembali
       </a>
@@ -30,7 +30,7 @@
     <div
       class="p-4 bg-white rounded-lg shadow-lg 2xl:col-span-2 sm:p-6">
       <div class="mb-4">
-        <form action="{{ route('dashboard.product.update', ['id' => $data->id]) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('dashboard.product.master.update', ['id' => $data->id]) }}" method="POST" enctype="multipart/form-data">
           @method('PUT')
           @csrf
           <div class="space-y-2">
@@ -77,34 +77,14 @@
                     @endforeach
                   </select>
                 </div>
-
-                <div>
-                  <label for="purchase_price" class="my-2 block text-sm font-medium text-gray-900">Harga Beli</label>
-                  <input type="text" name="purchase_price" id="purchase_price" onkeyup="keyup_rupiah(this);checkPrice(this)"
-                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                    placeholder="Harga Beli" required  value="{{ old('purchase_price', number_format($data->purchase_price, 0, ',', '.')) }}">
-                </div>
               </div>
 
               <div class="flex-1">
                 <div>
-                  <label for="supplier_id" class="mb-2 block text-sm font-medium text-gray-900">Supplier</label>
-                  <select id="supplier_id" name="supplier_id"
-                    class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                    required>
-                    <option disabled value="" selected>~ Pilih Satuan ~</option>
-                    @foreach ($supplier as $item)
-                      <option value="{{ $item->id }}" @if (old('supplier_id', $data->supplier_id) == $item->id) selected @endif>
-                        {{ $item->code }} - {{ $item->name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-
-                <div>
-                  <label for="stock" class="my-2 block text-sm font-medium text-gray-900">Stok</label>
-                  <input type="number" min="0" name="stock" id="stock"
+                  <label for="purchase_price" class="mb-2 block text-sm font-medium text-gray-900">Harga Beli</label>
+                  <input type="text" name="purchase_price" id="purchase_price" onkeyup="keyup_rupiah(this);checkPrice(this)"
                     class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                    placeholder="Stok" required value="{{ old('stock', $data->stock) }}">
+                    placeholder="Harga Beli" required  value="{{ old('purchase_price', number_format($data->purchase_price, 0, ',', '.')) }}">
                 </div>
 
                 <div>
@@ -119,13 +99,6 @@
                   <input type="text" name="location" id="location"
                     class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                     placeholder="Lokasi / Rak" value="{{ old('location', $data->location) }}">
-                </div>
-
-                <div>
-                  <label for="expired_date" class="my-2 block text-sm font-medium text-gray-900">Tanggal Kadaluarsa</label>
-                  <input type="date" name="expired_date" id="expired_date"
-                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-                    placeholder="Tanggal Kadaluarsa" required value="{{ old('expired_date', $data->expired_date) }}">
                 </div>
               </div>
             </div>
@@ -150,9 +123,9 @@
                           <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
                             Laba (%)
                           </th>
-                          <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                          {{-- <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
                             Diskon (%)
-                          </th>
+                          </th> --}}
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200 bg-white">
@@ -179,8 +152,9 @@
                               placeholder="Harga Jual" required value="{{ number_format(old('price[0]', $dataDetail[0]?->price ?? null), 0, ',', '.') }}">
                           </td>
                           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="profit[]" id="profit-1" onkeyup="checkPrice(this)"
-                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                            <input type="text" name="profit[]" id="profit-1" readonly
+                              {{-- onkeyup="checkPrice(this)" --}}
+                              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Laba" value="{{
                                 data_get($dataDetail, '0.contains', 0) > 0 &&
                                 $data->purchase_price > 0
@@ -194,9 +168,7 @@
                                 ) * 100
                                 : 0
                               }}">
-                          </td>
-                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="discount[]" id="discount-1"
+                            <input type="number" min="0" name="discount[]" id="discount-1" hidden
                               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Diskon" value="{{ old('discount[0]', $dataDetail[0]?->discount ?? null) }}">
                           </td>
@@ -227,8 +199,9 @@
                               placeholder="Harga Jual" value="{{ number_format(old('price[1]', $dataDetail[1]?->price ?? null), 0, ',', '.') }}">
                           </td>
                           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="profit[]" id="profit-2" onkeyup="checkPrice(this)"
-                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                            <input type="text" readonly name="profit[]" id="profit-2" readonly
+                              {{-- onkeyup="checkPrice(this)" --}}
+                              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Laba" value="{{
                                 data_get($dataDetail, '1.contains', 0) > 0 &&
                                 $data->purchase_price > 0
@@ -242,9 +215,7 @@
                                 ) * 100
                                 : 0
                               }}">
-                          </td>
-                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="discount[]" id="discount-2"
+                            <input type="number" min="0" name="discount[]" id="discount-2" hidden
                               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Diskon" value="{{ old('discount[1]', $dataDetail[1]?->discount ?? null) }}">
                           </td>
@@ -275,8 +246,9 @@
                               placeholder="Harga Jual" value="{{ number_format(old('price[2]', $dataDetail[2]?->price ?? null), 0, ',', '.') }}">
                           </td>
                           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="profit[]" id="profit-3" onkeyup="checkPrice(this)"
-                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                            <input type="text" readonly name="profit[]" id="profit-3" readonly
+                              {{-- onkeyup="checkPrice(this)" --}}
+                              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Laba" value="{{
                                 data_get($dataDetail, '2.contains', 0) > 0 &&
                                 $data->purchase_price > 0
@@ -290,9 +262,7 @@
                                 ) * 100
                                 : 0
                               }}">
-                          </td>
-                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="discount[]" id="discount-3"
+                            <input type="number" min="0" name="discount[]" id="discount-3" hidden
                               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Diskon" value="{{ old('discount[2]', $dataDetail[2]?->discount ?? null) }}">
                           </td>
@@ -323,8 +293,9 @@
                               placeholder="Harga Jual" value="{{ number_format(old('price[3]', $dataDetail[3]?->price ?? null), 0, ',', '.') }}">
                           </td>
                           <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="profit[]" id="profit-4" onkeyup="checkPrice(this)"
-                              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                            <input type="number" min="0" name="profit[]" id="profit-4" readonly
+                              {{-- onkeyup="checkPrice(this)" --}}
+                              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Laba" value="{{
                                 data_get($dataDetail, '3.contains', 0) > 0 &&
                                 $data->purchase_price > 0
@@ -338,9 +309,7 @@
                                 ) * 100
                                 : 0
                               }}">
-                          </td>
-                          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-                            <input type="number" min="0" name="discount[]" id="discount-4"
+                            <input type="number" min="0" name="discount[]" id="discount-4" hidden
                               class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                               placeholder="Diskon" value="{{ old('discount[3]', $dataDetail[3]?->discount ?? null) }}">
                           </td>

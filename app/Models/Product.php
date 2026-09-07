@@ -18,4 +18,19 @@ class Product extends Model
     {
         return $this->hasMany(ProductDetail::class, 'product_id');
     }
+
+    public function Category()
+    {
+        return $this->belongsTo(MasterProductCategory::class, 'product_category_id');
+    }
+
+    public function BaseUom() 
+    {
+        return $this->belongsTo(MasterUom::class, 'base_uom_id');
+    }
+
+    public function Stock()
+    {
+        return $this->hasMany(ProductStock::class, 'product_id');
+    }
 }

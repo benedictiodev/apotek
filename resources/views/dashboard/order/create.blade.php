@@ -20,7 +20,7 @@
                 </ol>
             </nav>
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl mb-4">Tambahkan Data Order</h1>
-            <a href="{{ route('dashboard.order') }}"
+            <a href="{{ route('dashboard.order.list') }}"
                 class="w-fit shadow-lg justify-center rounded-lg bg-slate-400 px-5 py-1.5 text-center text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300">
                 Kembali
             </a>
@@ -33,7 +33,7 @@
                         <form action="#" onsubmit="searchProduct(event)">
                             <input type="text" name="search" id="products-search"
                                 class="block w-full rounded-lg border border-gray-300 p-2.5 text-gray-900 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                placeholder="Cari Data Product" autofocus>
+                                placeholder="Cari Data Product" autofocus autocomplete="off">
                         </form>
                     </div>
                     <div class="flex gap-2">
@@ -68,6 +68,10 @@
                                                         Nama
                                                     </th>
                                                     <th scope="col"
+                                                        class="p-4 text-start text-base font-bold uppercase text-white">
+                                                        Batch
+                                                    </th>
+                                                    <th scope="col"
                                                         class="p-4 text-start text-base font-bold uppercase text-white"
                                                         width="10%">
                                                         Jumlah
@@ -85,9 +89,14 @@
                                                     <th scope="col"
                                                         class="p-4 text-start text-base font-bold uppercase text-white"
                                                         width="15%">
-                                                        Total
+                                                        Total Harga
                                                     </th>
                                                     <th scope="col"
+                                                        class="p-4 text-start text-base font-bold uppercase text-white"
+                                                        width="10%">
+                                                        Aksi
+                                                    </th>
+                                                    {{-- <th scope="col"
                                                         class="p-4 text-start text-base font-bold uppercase text-white"
                                                         width="12%">
                                                         Diskon (%)
@@ -101,7 +110,7 @@
                                                         class="p-4 text-start text-base font-bold uppercase text-white"
                                                         width="15%">
                                                         Total Harga
-                                                    </th>
+                                                    </th> --}}
                                                 </tr>
                                             </thead>
                                             <tbody id="body-order" class="divide-y divide-gray-200 bg-white"></tbody>
@@ -180,7 +189,7 @@
                                                 class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
                                                 placeholder="Total Harga" readonly>
                                         </div>
-                                        <div class="mb-3 flex justify-between">
+                                        <div class="mb-3 flex justify-between hidden">
                                             <div class="w-1/3 mr-2">
                                                 <label for="discount"
                                                     class="mb-2 block text-sm font-medium text-gray-900">
@@ -201,7 +210,7 @@
                                                     placeholder="Total Diskon" readonly>
                                             </div>
                                         </div>
-                                        <div class="mb-3 flex justify-between">
+                                        <div class="mb-3 flex justify-between hidden">
                                             <div class="w-1/3 mr-2">
                                                 <label for="tax"
                                                     class="mb-2 block text-sm font-medium text-gray-900">
@@ -451,6 +460,15 @@
             updateConfirmTotalPayment();
         }
 
+        const updateBatch = (event, sequenceNumber) => {
+            const value = event.value;
+            document.getElementById(`batch_id-${sequenceNumber}`).value = value;
+        }
+
+        const deleteOrderButton = (sequenceNumber) => {
+            document.getElementById(`row_order-${sequenceNumber}`)?.remove();
+        } 
+
         const addProductToOrder = (data) => {
             dataProduct[sequence] = data.product_detail;
 
@@ -467,60 +485,86 @@
                 })
                 .join('');
 
+            const batchOptions = data.stock
+                .map((item, index) => {
+                    return `
+                <option
+                    value="${item.id}"
+                    ${index === 0 ? 'selected' : ''}
+                >
+                    ${item.batch}
+                </option>
+            `;
+                })
+                .join('');
+
             let body = `
-        <tr>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            ${data.code}
-            <input type="text" name="product_id[${sequence}]" id="product_id-${sequence}"
-              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              value="${data.id}" hidden>
-          </td>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            ${data.name}
-          </td>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            <input type="number" min="0" value="1" name="quantity[${sequence}]" id="quantity-${sequence}" oninput="updateDataItem(${sequence})"
-              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              placeholder="jumlah">
-          </td>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            <input type="text" name="product_detail_id[${sequence}]" id="product_detail_id-${sequence}" onkeyup="updateDataItem(${sequence})"
-              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              value="${data.product_detail[0].id}" hidden>
-            <select id="select_product_id-${sequence}" name="select_product_id[${sequence}]"
-              class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              onchange="updateUom(this, ${sequence})"
-            >
-              ${uomOptions}
-            </select>
-          </td>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            <input type="text" name="price[${sequence}]" id="price-${sequence}" onkeyup="keyup_rupiah(this);updateDataItem(${sequence})"
-              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              placeholder="Harga" value="${update_to_format_rupiah(data.product_detail[0].price)}">
-          </td>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            <input type="text" name="total_base_price[${sequence}]" id="total_base_price-${sequence}"
-              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price)}">
-          </td>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            <input type="number" min="0" name="discount[${sequence}]" id="discount-${sequence}" oninput="updateDataItem(${sequence})"
-              class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              placeholder="Diskon" value="${data.product_detail[0].discount}">
-          </td>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            <input type="text" name="total_discount_price[${sequence}]" id="total_discount_price-${sequence}"
-              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price)}">
-          </td>
-          <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
-            <input type="text" name="total_price[${sequence}]" id="total_price-${sequence}"
-              class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
-              placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price - (data.product_detail[0].price * data.product_detail[0].discount / 100))}">
-          </td>
-        </tr>
-      `;
+              <tr id="row_order-${sequence}">
+                <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                  ${data.code}
+                  <input type="text" name="product_id[${sequence}]" id="product_id-${sequence}"
+                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    value="${data.id}" hidden>
+                </td>
+                <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                  ${data.name}
+                </td>
+                <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                  <input type="text" name="batch_id[${sequence}]" id="batch_id-${sequence}"
+                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    value="${data.stock[0].id}" hidden>
+                  <select id="select_batch_id-${sequence}" name="select_batch_id[${sequence}]"
+                    class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    onchange="updateBatch(this, ${sequence})"
+                  >
+                    ${batchOptions}
+                  </select>
+                </td>
+                <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                  <input type="number" min="0" value="1" name="quantity[${sequence}]" id="quantity-${sequence}" oninput="updateDataItem(${sequence})"
+                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    placeholder="jumlah">
+                </td>
+                <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                  <input type="text" name="product_detail_id[${sequence}]" id="product_detail_id-${sequence}" onkeyup="updateDataItem(${sequence})"
+                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    value="${data.product_detail[0].id}" hidden>
+                  <select id="select_product_id-${sequence}" name="select_product_id[${sequence}]"
+                    class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    onchange="updateUom(this, ${sequence})"
+                  >
+                    ${uomOptions}
+                  </select>
+                </td>
+                <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                  <input type="text" name="price[${sequence}]" id="price-${sequence}" onkeyup="keyup_rupiah(this);updateDataItem(${sequence})"
+                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    placeholder="Harga" value="${update_to_format_rupiah(data.product_detail[0].price)}">
+                </td>
+                <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                  <input type="text" name="total_base_price[${sequence}]" id="total_base_price-${sequence}"
+                    class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price)}">
+                  <input type="number" min="0" name="discount[${sequence}]" id="discount-${sequence}" oninput="updateDataItem(${sequence})" hidden
+                    class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    placeholder="Diskon" value="${data.product_detail[0].discount}">
+                  <input type="text" name="total_discount_price[${sequence}]" id="total_discount_price-${sequence}" hidden
+                    class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price)}">
+                  <input type="text" name="total_price[${sequence}]" id="total_price-${sequence}" hidden
+                    class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                    placeholder="Total" readonly  value="${update_to_format_rupiah(data.product_detail[0].price - (data.product_detail[0].price * data.product_detail[0].discount / 100))}">
+                </td>
+                <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                    <button type="button" onClick="deleteOrderButton(${sequence})"
+                        class="inline-flex items-center rounded-lg bg-red-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-red-800 focus:ring-4 focus:ring-red-300"
+                    ">
+                        <x-fas-trash-alt class="mr-2 h-4 w-4" />
+                        Hapus
+                    </button>
+                </td>
+              </tr>
+            `;
             const queryBodyOrderTable = document.getElementById('body-order');
             queryBodyOrderTable.insertAdjacentHTML('beforeend', body);
 
