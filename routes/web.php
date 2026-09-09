@@ -51,7 +51,10 @@ Route::prefix("/dashboard")->middleware([
             Route::get("/", [ProductController::class, 'indexPurchase'])->name('dashboard.product.purchase');
             Route::post("/store", [ProductController::class, 'StorePurchase'])->name('dashboard.product.purchase.store');
             Route::get("/{id}/show", [ProductController::class, 'ShowPurchase'])->name('dashboard.product.purchase.show');
+            Route::post("/{id}/store", [ProductController::class, 'StoreDetailPurchase'])->name('dashboard.product.purchase.store.detail');
+            Route::post("/update", [ProductController::class, 'UpdateDetailPurchase'])->name('dashboard.product.purchase.update.detail');
             Route::delete("/{id}", [ProductController::class, 'DeleteDetailPurchase'])->name('dashboard.product.purchase.delete.detail');
+            Route::post("/{id}", [ProductController::class, 'confirmationPurchase'])->name('dashboard.product.purchase.confirmation');
         });
     });
 
