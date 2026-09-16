@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -141,6 +142,81 @@ class ProductController extends Controller
         } catch (Exception $error) {
             DB::rollBack();
             return redirect()->route('dashboard.product.master')->with('failed', "Gagal menambahkan data produk");
+        }
+    }
+
+    public function store_api(Request $request) {
+        try {
+            $validate = $request->validate([
+                'name' => 'required',
+                'code' => 'required',
+                'product_category_id' => 'required',
+                'base_uom_id' => 'required',
+                'purchase_price' => 'required',
+                'stock_minimal' => 'required',
+            ]);
+            // dd($request);
+
+            DB::beginTransaction();
+            $store = Product::create([
+                'code' => $validate['code'],
+                'name' => $validate['name'],
+                'product_category_id' => $validate['product_category_id'],
+                'base_uom_id' => $validate['base_uom_id'],
+                'purchase_price' => (int) str_replace('.', '', $validate['purchase_price']),
+                // 'stock' => $validate['stock'],
+                'stock_minimal' => $validate['stock_minimal'],
+                'location' => $request->location ?? '',
+                // 'expired_date' => $validate['expired_date'],
+                // 'supplier_id' => $validate['supplier_id'],
+                'company_id' => Auth::user()->company_id,
+            ]);
+
+            // ProductSupplier::create([
+            //     'supplier_id' => $validate['supplier_id'],
+            //     'product_id' => $store->id,
+            // ]);
+
+            foreach ($request->uom_id as $key => $item) {
+                $storeDetail = ProductDetail::create([
+                    'uom_id' => $item,
+                    'price' => (int) str_replace('.', '', $request->price[$key]),
+                    'contains' => $request->contains[$key],
+                    'discount' => $request->discount[$key] ?? 0,
+                    'product_id' => $store->id,
+                ]);
+            }
+
+
+            if ($store) {
+                DB::commit();
+                $data = Product::query()
+                    ->select('products.id', 'products.code', 'products.name')
+                    ->with(['ProductDetail', 'ProductDetail.Uom', 'Stock' => function($query) {
+                        $query->where('stock', '>', 0);
+                    }])
+                    ->where('products.id', $store->id)
+                    ->get();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Produk berhasil ditambahkan',
+                    'data' => $data,
+                ], 201);
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menambahkan produk',
+                ], 400);
+            }
+        } catch (ValidationException $error) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $error->errors(),
+            ], 422);
         }
     }
 
@@ -355,9 +431,19 @@ class ProductController extends Controller
             ->where('company_id', Auth::user()->company_id)
             ->get();
 
+        $category = MasterProductCategory::query()
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
+
+        $uom = MasterUom::query()
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
+
         return view('dashboard.product.purchase.edit', [
             "data" => $data,
-            "paymentMethod" => $paymentMethod
+            "paymentMethod" => $paymentMethod,
+            "uom" => $uom,
+            "category" => $category,
         ]);
     }
 

@@ -240,6 +240,279 @@
     </div>
 
     <button
+        id="btn-open-modal-new_product"
+        type="button"
+        class="hidden"
+        data-modal-target="modal-new_product"
+        data-modal-toggle="modal-new_product">
+    </button>
+    <div id="modal-new_product" tabindex="-1" aria-hidden="true"
+        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-4xl max-h-full">
+            <!-- Modal content -->
+            <div class="relative bg-white rounded-lg shadow">
+                <!-- Modal header -->
+                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+                    <h3 class="text-xl font-semibold text-gray-900">
+                        Tambah Produk Baru
+                    </h3>
+                    <button type="button"
+                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+                        data-modal-hide="modal-new_product">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                        </svg>
+                        <span class="sr-only">Tutup</span>
+                    </button>
+                </div>
+                <!-- Modal body -->
+                <div class="p-4 md:p-5 space-y-4">
+                    <form action="{{ route('dashboard.product.master.store') }}" method="POST" enctype="multipart/form-data" onsubmit="submitNewProduct(event)" id="form_new_product">
+                        @csrf
+                        <div class="space-y-2">
+                            <div class="flex justify-between gap-4">
+                                <div class="flex-1">
+                                    <div>
+                                        <label for="code" class="mb-2 block text-sm font-medium text-gray-900">Kode
+                                            Produk</label>
+                                        <input type="text" name="code" id="code"
+                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                            placeholder="Kode Produk" required>
+                                    </div>
+
+                                    <div>
+                                        <label for="name" class="my-2 block text-sm font-medium text-gray-900">Nama
+                                            Produk</label>
+                                        <input type="text" name="name" id="name"
+                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                            placeholder="Nama Produk" required>
+                                    </div>
+
+                                    <div>
+                                        <label for="name" class="my-2 block text-sm font-medium text-gray-900">Kategori</label>
+                                        <select id="product_category_id" name="product_category_id"
+                                            class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                            required>
+                                            <option disabled value="" selected>~ Pilih Kategori ~</option>
+                                            @foreach ($category as $item)
+                                            <option value="{{ $item->id }}" @if (old('type') == $item->id) selected @endif>
+                                                {{ $item->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label for="name" class="my-2 block text-sm font-medium text-gray-900">Satuan Dasar</label>
+                                        <select id="base_uom_id" name="base_uom_id" onchange="changeBaseUom(this)"
+                                            class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                            required>
+                                            <option disabled value="" selected>~ Pilih Satuan ~</option>
+                                            @foreach ($uom as $item)
+                                            <option value="{{ $item->id }}" @if (old('type') == $item->id) selected @endif>
+                                                {{ $item->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="flex-1">
+                                    <div>
+                                        <label for="stock_minimal" class="mb-2 block text-sm font-medium text-gray-900">Stok Minimal</label>
+                                        <input type="number" min="0" name="stock_minimal" id="stock_minimal"
+                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                            placeholder="Stok Minimal" required>
+                                    </div>
+
+                                    <div>
+                                        <label for="location" class="my-2 block text-sm font-medium text-gray-900">Lokasi / Rak</label>
+                                        <input type="text" name="location" id="location"
+                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                            placeholder="Lokasi / Rak">
+                                    </div>
+
+                                    <div>
+                                        <label for="purchase_price" class="my-2 block text-sm font-medium text-gray-900">Harga Beli</label>
+                                        <input type="text" name="purchase_price" id="purchase_price" onkeyup="keyup_rupiah(this);checkPrice(this)"
+                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                            placeholder="Harga Beli" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col">
+                                <div class="overflow-x-auto">
+                                    <div class="inline-block min-w-full align-middle">
+                                        <label for="expired_date" class="mb-2 block text-sm font-medium text-gray-900">Harga Jual</label>
+                                        <div class="overflow-hidden shadow rounded-t-lg">
+                                            <table class="min-w-full table-fixed divide-y divide-gray-200">
+                                                <thead class="bg-sky-300">
+                                                    <tr>
+                                                        <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                                                            Satuan
+                                                        </th>
+                                                        <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                                                            Isi
+                                                        </th>
+                                                        <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                                                            Harga Jual
+                                                        </th>
+                                                        <th scope="col" class="p-4 text-start text-base font-bold uppercase text-white">
+                                                            Laba (%)
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-200 bg-white">
+                                                    <tr>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text" id="uom_id-base-1"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Pilih Satuan" disabled>
+                                                            <input type="text" name="uom_id[0]" id="uom_id-1"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            hidden>
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="number" min="0" value="1" name="contains[]" id="contains-1"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Isi" readonly>
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text" name="price[]" id="price-1" onkeyup="keyup_rupiah(this);checkPrice(this)"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Harga Jual" required>
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text"" name="profit[]" id="profit-1" 
+                                                            {{-- onkeyup="checkPrice(this)" --}}
+                                                            class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Laba" readonly>
+                                                            <input type="number" min="0" name="discount[]" id="discount-1" hidden
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Diskon">
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <select id="uom_id-2" name="uom_id[1]"
+                                                            class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                                            >
+                                                            <option disabled value="" selected>~ Pilih Satuan ~</option>
+                                                            @foreach ($uom as $item)
+                                                                <option value="{{ $item->id }}" @if (old('type') == $item->id) selected @endif>
+                                                                {{ $item->name }}</option>
+                                                            @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="number" min="0" name="contains[]" id="contains-2"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Isi">
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text" name="price[]" id="price-2" onkeyup="keyup_rupiah(this);checkPrice(this)"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Harga Jual">
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text" name="profit[]" id="profit-2" 
+                                                            {{-- onkeyup="checkPrice(this)" --}}
+                                                            class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Laba" readonly>
+                                                            <input type="number" min="0" name="discount[]" id="discount-2" hidden
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Diskon">
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <select id="uom_id-3" name="uom_id[2]"
+                                                            class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                                            >
+                                                            <option disabled value="" selected>~ Pilih Satuan ~</option>
+                                                            @foreach ($uom as $item)
+                                                                <option value="{{ $item->id }}" @if (old('type') == $item->id) selected @endif>
+                                                                {{ $item->name }}</option>
+                                                            @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="number" min="0" name="contains[]" id="contains-3"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Isi">
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text" name="price[]" id="price-3" onkeyup="keyup_rupiah(this);checkPrice(this)"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Harga Jual">
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text" name="profit[]" id="profit-3" 
+                                                            {{-- onkeyup="checkPrice(this)" --}}
+                                                            class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Laba" readonly>
+                                                            <input type="number" min="0" name="discount[]" id="discount-3" hidden
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Diskon">
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <select id="uom_id-4" name="uom_id[3]"
+                                                            class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                                            >
+                                                            <option disabled value="" selected>~ Pilih Satuan ~</option>
+                                                            @foreach ($uom as $item)
+                                                                <option value="{{ $item->id }}" @if (old('type') == $item->id) selected @endif>
+                                                                {{ $item->name }}</option>
+                                                            @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="number" min="0" name="contains[]" id="contains-4"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Isi">
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text" name="price[]" id="price-4" onkeyup="keyup_rupiah(this);checkPrice(this)"
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Harga Jual">
+                                                        </td>
+                                                        <td class="whitespace-nowrap p-4 text-sm font-normal text-gray-500">
+                                                            <input type="text" name="profit[]" id="profit-4" 
+                                                            {{-- onkeyup="checkPrice(this)" --}}
+                                                            class="block w-full rounded-lg border bg-gray-100 border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Laba" readonly>
+                                                            <input type="number" min="0" name="discount[]" id="discount-4" hidden
+                                                            class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600"
+                                                            placeholder="Diskon">
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- Modal footer -->
+                <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b">
+                    <button form="form_new_product"
+                        type="submit"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                        Simpan Perubahan
+                    </button>
+                    <button id="button-close_order-new" data-modal-hide="modal-new_product" type="button"
+                        class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button
         id="btn-open-modal-add"
         type="button"
         class="hidden"
@@ -694,9 +967,10 @@
                 addProductToOrder(resultData[0]);
             }
 
-            if (resultData.length > 1) {
-                openProductModal(resultData);
+            if (resultData.length > 1 || resultData.length == 0) {
+                openProductModal(resultData, document.getElementById('products-search').value);
             }
+            
 
             document.getElementById('products-search').value = '';
         }
@@ -706,6 +980,12 @@
 
             addProductToOrder(product);
             closeProductModal();
+        };
+
+        window.modalAddNewProduct = () => {
+            closeProductModal();
+            $('#code').val(lastSearchProduk);
+            $('#btn-open-modal-new_product').click();
         };
 
         window.closeProductModal = () => {
@@ -724,21 +1004,47 @@
         const renderProductModal = () => {
             const productList = document.getElementById('product-modal-list');
 
-            productList.innerHTML = modalProducts
-                .map((product, index) => {
-                    const isSelected = index === selectedProductIndex;
+            if (modalProducts.length > 0) {
+                const productItems = modalProducts
+                    .map((product, index) => {
+                        const isSelected = index === selectedProductIndex;
+    
+                        return `
+                            <button type="button" onclick="selectProductFromModal(${index})" 
+                            class="product-modal-item mb-2 flex w-full items-center rounded-lg border px-4 py-2 text-left transition ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}"
+                            >
+                            <div class="font-semibold text-gray-900">${product.code}</div>
+                            <div class="text-gray-700 mx-2">-</div>
+                            <div class="text-gray-500">${product.name}</div>
+                            </button>
+                        `;
+                    });
 
-                    return `
-                        <button type="button" onclick="selectProductFromModal(${index})" 
-                        class="product-modal-item mb-2 flex w-full items-center rounded-lg border px-4 py-2 text-left transition ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}"
+                productItems.push(`
+                    <button type="button" onclick="modalAddNewProduct()" 
+                        class="product-modal-item mt-2 flex w-full items-center rounded-lg border px-4 py-2 text-left transition ${selectedProductIndex == modalProducts.length ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}"
                         >
-                        <div class="font-semibold text-gray-900">${product.code}</div>
+                        <div class="font-semibold text-gray-900">${lastSearchProduk}</div>
                         <div class="text-gray-700 mx-2">-</div>
-                        <div class="text-gray-500">${product.name}</div>
-                        </button>
-                    `;
-                })
-                .join('');
+                        <div class="text-gray-500">Tambahkan Sebagai Produk Baru</div>
+                    </button>
+                `);
+
+                productList.innerHTML = productItems.join('');
+            } else {
+                productList.innerHTML = `
+                    <div class="text-center">
+                        Product tidak ditemukan
+                    </div>
+                    <button type="button" onclick="modalAddNewProduct()" 
+                        class="product-modal-item mt-2 flex w-full items-center rounded-lg border px-4 py-2 text-left transition border-blue-600 bg-blue-50"
+                        >
+                        <div class="font-semibold text-gray-900">${lastSearchProduk}</div>
+                        <div class="text-gray-700 mx-2">-</div>
+                        <div class="text-gray-500">Tambahkan Sebagai Produk Baru</div>
+                    </button>
+                `;
+            }
 
             const selectedItem = document.querySelector('.product-modal-item.border-blue-600');
             selectedItem?.scrollIntoView({
@@ -746,9 +1052,10 @@
             });
         };
 
-        const openProductModal = (products) => {
+        const openProductModal = (products, lastSearch) => {
             modalProducts = products;
             selectedProductIndex = 0;
+            lastSearchProduk = lastSearch;
 
             const modal = document.getElementById(
                 'product-modal'
@@ -771,7 +1078,7 @@
             // Arrow bawah
             if (event.key === 'ArrowDown') {
                 event.preventDefault();
-                selectedProductIndex = (selectedProductIndex + 1) % modalProducts.length;
+                selectedProductIndex = (selectedProductIndex + 1) % (modalProducts.length + 1);
                 renderProductModal();
                 return;
             }
@@ -779,7 +1086,7 @@
             // Arrow atas
             if (event.key === 'ArrowUp') {
                 event.preventDefault();
-                selectedProductIndex = (selectedProductIndex - 1 + modalProducts.length) % modalProducts.length;
+                selectedProductIndex = (selectedProductIndex - 1 + (modalProducts.length + 1)) % (modalProducts.length + 1);
                 renderProductModal();
                 return;
             }
@@ -787,7 +1094,11 @@
             // Enter
             if (event.key === 'Enter') {
                 event.preventDefault();
-                selectProductFromModal(selectedProductIndex);
+                if (selectedProductIndex == modalProducts.length) {
+                    modalAddNewProduct();
+                } else {
+                    selectProductFromModal(selectedProductIndex);
+                }
                 return;
             }
 
@@ -797,5 +1108,93 @@
                 closeProductModal();
             }
         });
+
+        const checkPrice = (event) => {
+            if (event.id == 'purchase_price') {
+                let purchasePrice = update_to_number(event.value);
+                let queryPrice = document.getElementsByName('price[]');
+                queryPrice.forEach(element => {
+                if (element.value != '' && element.value != 0) {
+                    let queryId = element.id;
+                    let number = queryId.split('-')[1];
+                    let queryContain = document.getElementById(`contains-${number}`);
+                    let contains = queryContain.value ?? 0;
+                    if (contains > 0) {
+                        let elementValue = update_to_number(element.value);
+                        let profit = elementValue - purchasePrice;
+                        let percentage = (profit / purchasePrice) * 100;
+                        let queryProfit = document.getElementById(`profit-${number}`);
+                        queryProfit.value = percentage;
+                    }
+                }
+                });
+            } else {
+                let queryPurchasePrice = document.getElementById('purchase_price');
+                if (queryPurchasePrice.value != '' && queryPurchasePrice.value != 0) {
+                    let purchasePrice = update_to_number(queryPurchasePrice.value);
+                    let elementValue = update_to_number(event.value);
+                    let queryId = event.id;
+                    let number = queryId.split('-')[1];
+
+                    let queryContain = document.getElementById(`contains-${number}`);
+                    let contains = queryContain.value ?? 0;
+                    if (contains > 0) {
+                        if (queryId.split('-')[0] == 'profit') {
+                            let price = (purchasePrice * (1 + elementValue / 100)) * contains;
+                            let queryPrice = document.getElementById(`price-${number}`);
+                            queryPrice.value = update_to_format_rupiah(price);
+                        } else if (queryId.split('-')[0] == 'price') {
+                            let profit = (elementValue / contains) - purchasePrice;
+                            let percentage = (profit / purchasePrice) * 100;
+                            let queryProfit = document.getElementById(`profit-${number}`);
+                            queryProfit.value = percentage;
+                        }
+                    }
+                }
+            }
+        }
+
+        const uom = @json($uom);
+        const changeBaseUom = (event) => {
+            let input = document.querySelector('#uom_id-1');
+            input.value = event.value;
+
+            let getUom = uom.find(function(item) {
+                return item.id == event.value;
+            });
+            let inputBase = document.querySelector('#uom_id-base-1');
+            inputBase.value = getUom.name;
+        }
+
+        const submitNewProduct = async (event) => {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(
+                    "{{ route('dashboard.product.master.store_api') }}",
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                        body: formData,
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Gagal menyimpan produk');
+                }
+
+                addProductToOrder(data.data[0]);
+                $('#button-close_order-new').click();
+            } catch (error) {
+                console.error(error);
+            }
+        };
     </script>
 @endpush
