@@ -197,8 +197,8 @@ class OrderController extends Controller
                 DB::commit();
 
                 if (($validate['is_print'] ?? 0) == 1) {
-                    $order = Order::query()->with(["User", "Orders", "Orders.Product"])->findOrFail($store->id);
-                    $this->thermalPrinterService->print($order);
+                    $printUrl = route('dashboard.order.print', $store->id);
+                    return redirect()->route('dashboard.order.create')->with('success', "Berhasil menambahkan data order")->with('printUrl', $printUrl);
                 }
 
                 return redirect()->route('dashboard.order.create')->with('success', "Berhasil menambahkan data order");
@@ -213,10 +213,17 @@ class OrderController extends Controller
         }
     }
 
-    public function showDetailOrder($id) {
+    public function showDetailOrder($id)
+    {
         $order = Order::where('id', $id)->with(['Orders', 'Orders.Product', 'Orders.Stock', 'User', 'Customer'])->first();
         return view('dashboard.order.detail', [
             'orders' => $order,
         ]);
+    }
+
+    public function printReceipt($id)
+    {
+        $order = Order::query()->with(["User", "Orders", "Orders.Product"])->findOrFail($id);
+        return view("dashboard.print", compact("order"));
     }
 }

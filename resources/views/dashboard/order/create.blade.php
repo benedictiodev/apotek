@@ -733,4 +733,15 @@
             $('#trigger-drawer-confirm_order').trigger('click');
         };
     </script>
+
+    @if(session('printUrl'))
+        <iframe src="{{ session('printUrl') }}" style="display:none;" id="printFrame" onload="printIframe()"></iframe>
+        <script>
+            function printIframe() {
+                var iframe = document.getElementById('printFrame');
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            }
+        </script>
+    @endif
 @endpush
