@@ -12,16 +12,17 @@
               <span class="ml-3" sidebar-toggle-item>Beranda</span>
             </a>
           </li>
+
           <li>
             <button type="button"
               class="flex sidebar_base group  p-2 {{ str_contains(Request::route()->getName(), 'dashboard.product') ? 'active_sidebar' : '' }}"
-              aria-controls="dropdown-finance" data-collapse-toggle="dropdown-finance">
+              aria-controls="dropdown-product" data-collapse-toggle="dropdown-product">
               <x-fas-money-bill class="w-6 h-6 text-gray-500 transition duration-75 mr-1 {{ str_contains(Request::route()->getName(), 'dashboard.product') ? 'text-white' : '' }}" />
               <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>Produk</span>
               <x-fas-chevron-down
                 class="w-4 h-4 text-gray-500 transition duration-75 mr-1 {{ str_contains(Request::route()->getName(), 'dashboard.product') ? 'text-white' : '' }}" />
             </button>
-            <ul id="dropdown-finance"
+            <ul id="dropdown-product"
               class="{{ str_contains(Request::route()->getName(), 'dashboard.product') ? '' : 'hidden' }} py-2 space-y-2">  
               <li>
                 <a href="{{ route('dashboard.product.master') }}"

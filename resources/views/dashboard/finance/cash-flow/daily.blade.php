@@ -159,6 +159,14 @@
                               Lihat Order
                             </a>
                           {{-- @endcanany --}}
+                        @elseif ($item->type == 'cash-out' && $item->purchase_id)
+                          {{-- @canany(['order-order aktif-lihat', 'order-riwayat order-lihat']) --}}
+                            <a href="{{ route('dashboard.product.purchase.show', ['id' => $item->purchase_id]) }}"
+                              class="inline-flex items-center rounded-lg bg-blue-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300">
+                              <x-fas-file class="mr-2 h-4 w-4" />
+                              Lihat Pembelian
+                            </a>
+                          {{-- @endcanany --}}
                         @else
                           @can('keuangan-arus kas harian-perbarui dana') 
                             <a href="{{ route('dashboard.finance.' . $item->type . '.edit', ['id' => $item->id]) }}"

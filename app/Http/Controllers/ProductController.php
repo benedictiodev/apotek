@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CashMonthly;
+use App\Models\CashOut;
+use App\Models\MasterPaymentMethod;
 use App\Models\MasterProductCategory;
 use App\Models\MasterSupplier;
 use App\Models\MasterUom;
@@ -11,11 +14,13 @@ use App\Models\ProductPurchase;
 use App\Models\ProductPurchaseDetail;
 use App\Models\ProductStock;
 use App\Models\ProductSupplier;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -137,6 +142,81 @@ class ProductController extends Controller
         } catch (Exception $error) {
             DB::rollBack();
             return redirect()->route('dashboard.product.master')->with('failed', "Gagal menambahkan data produk");
+        }
+    }
+
+    public function store_api(Request $request) {
+        try {
+            $validate = $request->validate([
+                'name' => 'required',
+                'code' => 'required',
+                'product_category_id' => 'required',
+                'base_uom_id' => 'required',
+                'purchase_price' => 'required',
+                'stock_minimal' => 'required',
+            ]);
+            // dd($request);
+
+            DB::beginTransaction();
+            $store = Product::create([
+                'code' => $validate['code'],
+                'name' => $validate['name'],
+                'product_category_id' => $validate['product_category_id'],
+                'base_uom_id' => $validate['base_uom_id'],
+                'purchase_price' => (int) str_replace('.', '', $validate['purchase_price']),
+                // 'stock' => $validate['stock'],
+                'stock_minimal' => $validate['stock_minimal'],
+                'location' => $request->location ?? '',
+                // 'expired_date' => $validate['expired_date'],
+                // 'supplier_id' => $validate['supplier_id'],
+                'company_id' => Auth::user()->company_id,
+            ]);
+
+            // ProductSupplier::create([
+            //     'supplier_id' => $validate['supplier_id'],
+            //     'product_id' => $store->id,
+            // ]);
+
+            foreach ($request->uom_id as $key => $item) {
+                $storeDetail = ProductDetail::create([
+                    'uom_id' => $item,
+                    'price' => (int) str_replace('.', '', $request->price[$key]),
+                    'contains' => $request->contains[$key],
+                    'discount' => $request->discount[$key] ?? 0,
+                    'product_id' => $store->id,
+                ]);
+            }
+
+
+            if ($store) {
+                DB::commit();
+                $data = Product::query()
+                    ->select('products.id', 'products.code', 'products.name')
+                    ->with(['ProductDetail', 'ProductDetail.Uom', 'Stock' => function($query) {
+                        $query->where('stock', '>', 0);
+                    }])
+                    ->where('products.id', $store->id)
+                    ->get();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Produk berhasil ditambahkan',
+                    'data' => $data,
+                ], 201);
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menambahkan produk',
+                ], 400);
+            }
+        } catch (ValidationException $error) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $error->errors(),
+            ], 422);
         }
     }
 
@@ -347,9 +427,107 @@ class ProductController extends Controller
             ->where('company_id', Auth::user()->company_id)
             ->first();
 
+        $paymentMethod = MasterPaymentMethod::query()
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
+
+        $category = MasterProductCategory::query()
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
+
+        $uom = MasterUom::query()
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
+
         return view('dashboard.product.purchase.edit', [
-            "data" => $data
+            "data" => $data,
+            "paymentMethod" => $paymentMethod,
+            "uom" => $uom,
+            "category" => $category,
         ]);
+    }
+
+    public function StoreDetailPurchase(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+            $productPurchase = ProductPurchase::where('id', $id)->first();
+            ProductPurchase::where('id', $id)->update([
+                "total_payment" => $productPurchase->total_payment + ((int) str_replace('.', '', $request['amount-add'])),
+            ]);
+
+            $productDetail = ProductDetail::with('Uom')->where('id', $request['uom_id-add'])->first();
+
+            $productStock = ProductStock::where('product_id', $request['product_id-add'])
+                ->where('batch', $request['batch-add'])
+                ->first();
+            if (!$productStock) {
+                $productStock = ProductStock::create([
+                    'batch' => $request['batch-add'],
+                    'stock' => 0,
+                    'expired_date' => $request['expired_date-add'],
+                    'product_id' => $request['product_id-add'],
+                ]);
+            }
+
+            ProductPurchaseDetail::create([
+                "product_purchase_id" => $id,
+                "product_id" => $request['product_id-add'],
+                "product_detail_id" => $request['uom_id-add'],
+                "product_stok_id" => $productStock->id,
+                "uom" => $productDetail->Uom->name,
+                "quantity_on_base_uom" => $productDetail->contains * $request['quantity-add'],
+                "quantity" => $request['quantity-add'],
+                "price" => ((int) str_replace('.', '', $request['price-add'])),
+                "amount" => ((int) str_replace('.', '', $request['amount-add'])),
+            ]);
+
+            DB::commit();
+            return redirect()->route('dashboard.product.purchase.show', ['id' => $id])->with('success', "Berhasil menambahkan data pembelian produk");
+        } catch (Exception $error) {
+            DB::rollBack();
+            return redirect()->route('dashboard.product.purchase.show', ['id' => $id])->with('failed', "Gagal menambahkan data pembelian produk");
+        }
+    }
+
+    public function UpdateDetailPurchase(Request $request) {
+        $data = ProductPurchaseDetail::where('id', $request->detail_id)->first();
+        try {
+            DB::beginTransaction();
+            $productPurchase = ProductPurchase::where('id', $data->product_purchase_id)->first();
+            ProductPurchase::where('id', $data->product_purchase_id)->update([
+                "total_payment" => $productPurchase->total_payment - $data->amount + ((int) str_replace('.', '', $request->amount)),
+            ]);
+
+            $productDetail = ProductDetail::with('Uom')->where('id', $request->uom_id)->first();
+
+            $productStock = ProductStock::where('product_id', $data->product_id)
+                ->where('batch', $request->batch)
+                ->first();
+            if (!$productStock) {
+                $productStock = ProductStock::create([
+                    'batch' => $request->batch,
+                    'stock' => 0,
+                    'expired_date' => $request->expired_date,
+                    'product_id' => $data->product_id,
+                ]);
+            }
+
+            ProductPurchaseDetail::where('id', $request->detail_id)->update([
+                "product_detail_id" => $request->uom_id,
+                "product_stok_id" => $productStock->id,
+                "uom" => $productDetail->Uom->name,
+                "quantity_on_base_uom" => $productDetail->contains * $request->quantity,
+                "quantity" => $request->quantity,
+                "price" => ((int) str_replace('.', '', $request->price)),
+                "amount" => ((int) str_replace('.', '', $request->amount)),
+            ]);
+
+            DB::commit();
+            return redirect()->route('dashboard.product.purchase.show', ['id' => $data->product_purchase_id])->with('success', "Berhasil merubah data pembelian produk");
+        } catch (Exception $error) {
+            DB::rollBack();
+            return redirect()->route('dashboard.product.purchase.show', ['id' => $data->product_purchase_id])->with('failed', "Gagal merubah data pembelian produk");
+        }
     }
 
     public function DeleteDetailPurchase($id) {
@@ -368,6 +546,60 @@ class ProductController extends Controller
         } catch (Exception $error) {
             DB::rollBack();
             return redirect()->route('dashboard.product.purchase.show', ['id' => $data->product_purchase_id])->with('failed', "Gagal menghapus data pembelian produk");
+        }
+    }
+
+    public function confirmationPurchase(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+            $productPurchase = ProductPurchase::where('id', $id)->first();
+            ProductPurchase::where('id', $id)->update([
+                "payment_method" => $request->payment_method,
+                "status" => "Done",
+            ]);
+
+            $purchaseDetail = ProductPurchaseDetail::where('product_purchase_id', $id)->get();
+            foreach ($purchaseDetail as $item) {
+                $productStock = ProductStock::where('id', $item->product_stok_id)->first();
+                ProductStock::where('id', $item->product_stok_id)->update([
+                    'stock' => $productStock->stock + $item->quantity_on_base_uom
+                ]);
+            }
+
+            CashOut::create([
+                'company_id' => Auth::user()->company_id,
+                'fund' => $productPurchase->total_payment,
+                'remark' => null,
+                'date_time' => Carbon::now()->toDateTimeString(),
+                'type' => $request->payment_method,
+                'purchase_id' => $id,
+                'remarks_from_master' => null,
+            ]);
+
+            $cash_monthly = CashMonthly::where("company_id", Auth::user()->company_id)
+                ->where("date", Carbon::now()->toDateString())->first();
+            if ($cash_monthly) {
+                CashMonthly::where("id", $cash_monthly->id)->update([
+                    "debit" => (int) $cash_monthly->debit + $productPurchase->total_payment,
+                    "amount" => (int) $cash_monthly->amount - $productPurchase->total_payment,
+                    "total_amount" => (int) $cash_monthly->total_amount - $productPurchase->total_payment,
+                ]);
+            } else {
+                CashMonthly::create([
+                    "company_id" => Auth::user()->company_id,
+                    "debit" => $productPurchase->total_payment,
+                    "kredit" => 0,
+                    "amount" => 0 - $productPurchase->total_payment,
+                    "total_amount" => 0 - $productPurchase->total_payment,
+                    "date" => Carbon::now()->toDateString()
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->route('dashboard.product.purchase.show', ['id' => $id])->with('success', "Berhasil konfirmasi pembelian produk");
+        } catch (Exception $error) {
+            DB::rollBack();
+            return redirect()->route('dashboard.product.purchase.show', ['id' => $id])->with('failed', "Gagal konfirmasi pembelian produk");
         }
     }
 }

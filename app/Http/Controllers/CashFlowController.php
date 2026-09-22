@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CashIn;
 use App\Models\CashMonthly;
+use App\Models\CashOut;
 use App\Models\MasterPaymentMethod;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -32,9 +33,9 @@ class CashFlowController extends Controller
         $cash_in = CashIn::where('date_time', 'like', $periode . '%')
             ->select('*', 'type AS type_fund', DB::raw('"cash-in" AS type'))
             ->where('company_id', '=', $company_id)->orderBy('date_time')->get();
-        // $cash_out = CashOut::where('datetime', 'like', $periode . '%')
-        //     ->select('*', 'type AS type_fund', DB::raw('"cash-out" AS type'))
-        //     ->where('company_id', '=', $company_id)->orderBy('datetime')->get();
+        $cash_out = CashOut::where('date_time', 'like', $periode . '%')
+            ->select('*', 'type AS type_fund', DB::raw('"cash-out" AS type'))
+            ->where('company_id', '=', $company_id)->orderBy('date_time')->get();
 
         $total_cash_in = 0;
         foreach($cash_in AS $item) {
@@ -48,19 +49,19 @@ class CashFlowController extends Controller
             }
         }
         $total_cash_out = 0;
-        foreach([] AS $item) {
+        foreach($cash_out AS $item) {
             $total_cash_out += (int)$item->fund;
 
-            // foreach($result_fund as $key => $value) {
-            //     if ($value->name == $item->type_fund) {
-            //         $result_fund[$key]->cash_out += (int)$item->fund;
-            //         break;
-            //     }
-            // }
+            foreach($result_fund as $key => $value) {
+                if ($value->name == $item->type_fund) {
+                    $result_fund[$key]->cash_out += (int)$item->fund;
+                    break;
+                }
+            }
         }
 
-        $result = $cash_in;
-        // $result = $cash_in->push(...$cash_out);
+        // $result = $cash_in;
+        $result = $cash_in->push(...$cash_out);
 
         $sortedResult = $result->sortBy(['datetime']);
         $processedData = collect($sortedResult);
