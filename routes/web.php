@@ -12,6 +12,7 @@ use App\Http\Controllers\MasterData\SupplierController;
 use App\Http\Controllers\MasterData\UomController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockOpnameController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -60,6 +61,7 @@ Route::prefix("/dashboard")->middleware([
         Route::get("/create", [OrderController::class, 'create'])->name('dashboard.order.create');
         Route::post("/store", [OrderController::class, 'store'])->name('dashboard.order.store');
         Route::get("/{id}/show", [OrderController::class, 'showDetailOrder'])->name('dashboard.order.detail');
+        Route::get("/{id}/print", [OrderController::class, 'printReceipt'])->name('dashboard.order.print');
     });
 
     Route::prefix("/finance")->group(function () {
@@ -124,5 +126,17 @@ Route::prefix("/dashboard")->middleware([
             Route::put("/{id}/update", [PaymentMethodController::class, 'update'])->name('dashboard.master-data.payment-method.update');
             Route::delete('/{id}', [PaymentMethodController::class, 'destroy'])->name('dashboard.master-data.payment-method.delete');
         });
+    });
+
+    Route::prefix('/stock-opname')->group(function () {
+        Route::get('/', [StockOpnameController::class, 'index'])->name('dashboard.stock-opname.index');
+        Route::post('/', [StockOpnameController::class, 'store'])->name('dashboard.stock-opname.store'); // Buat sesi baru
+
+        Route::get('/{id}', [StockOpnameController::class, 'show'])->name('dashboard.stock-opname.show'); // Halaman detail (read-only)
+
+        // Route Workspace & Submit yang sudah dibuat sebelumnya
+        Route::get('/{id}/workspace', [StockOpnameController::class, 'workspace'])->name('dashboard.stock-opname.workspace');
+        Route::get('/api/scan', [StockOpnameController::class, 'scanBarcode'])->name('dashboard.stock-opname.scan');
+        Route::post('/{id}/submit', [StockOpnameController::class, 'submitWorkspace'])->name('dashboard.stock-opname.submit');
     });
 });
