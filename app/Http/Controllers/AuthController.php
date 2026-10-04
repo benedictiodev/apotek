@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    function index(Request $request) {
-         if (Auth::check()) {
+    function index(Request $request)
+    {
+        if (Auth::check()) {
             $company = Company::where('id', Auth::user()->company_id)->first();
             if ($company->grace_days_ended_at <= (Carbon::now()->format('Y-m-d') . ' 23:59:59')) {
                 Auth::logout();
@@ -31,13 +32,17 @@ class AuthController extends Controller
         }
     }
 
-    function post_login(Request $request) {
+    function post_login(Request $request)
+    {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+            'remember' => ['sometimes'],
         ]);
- 
-        if (Auth::attempt($credentials)) {
+
+        $auth = ["email" => $credentials["email"], "password" => $credentials['password']];
+
+        if (Auth::attempt($auth, isset($credentials['remember']) ? $credentials['remember'] : false)) {
             $company = Company::where('id', Auth::user()->company_id)->first();
             if ($company->grace_days_ended_at <= (Carbon::now()->format('Y-m-d') . ' 23:59:59')) {
                 Auth::logout();
@@ -64,11 +69,13 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 
-    public function profile() {
+    public function profile()
+    {
         return view('dashboard.profile.edit');
     }
 
-    public function post_profile(Request $request) {
+    public function post_profile(Request $request)
+    {
         $validate = $request->validate([
             'name' => 'required',
             'email' => ['required', 'email'],
@@ -90,11 +97,13 @@ class AuthController extends Controller
         }
     }
 
-    public function change_password() {
+    public function change_password()
+    {
         return view('dashboard.profile.password');
     }
 
-    public function post_change_password(Request $request) {
+    public function post_change_password(Request $request)
+    {
         $validate = $request->validate([
             'old_password' => 'required',
             'new_password' => 'required',

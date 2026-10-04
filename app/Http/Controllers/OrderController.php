@@ -11,6 +11,7 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ProductDetail;
 use App\Models\ProductStock;
+use App\Models\StockLog;
 use App\Services\ThermalPrinter\ThermalPrinterService;
 use Carbon\Carbon;
 use Exception;
@@ -161,6 +162,18 @@ class OrderController extends Controller
             foreach ($InsertToOrderDetail as $dataOrderDetail) {
                 $dataOrderDetail['order_id'] = $store->id;
                 $storeDetail = OrderDetail::create($dataOrderDetail);
+
+                StockLog::create([
+                    'product_id' => $storeDetail->product_id,
+                    'product_stock_id' => $storeDetail->product_stok_id,
+                    'user_id' => Auth::id(),
+                    'type' => 'SALE',
+                    'qty_change' => -$storeDetail->quantity_on_base_uom,
+                    'balance_after' => ProductStock::where('id', $storeDetail->product_stok_id)->value('stock') - $storeDetail->quantity_on_base_uom,
+                    'reference_type' => OrderDetail::class,
+                    'reference_id' => $storeDetail->id,
+                    'note' => 'Penjualan Order: ' . $storeDetail->id_order
+                ]);
             }
 
             CashIn::create([

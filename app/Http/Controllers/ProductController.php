@@ -14,6 +14,7 @@ use App\Models\ProductPurchase;
 use App\Models\ProductPurchaseDetail;
 use App\Models\ProductStock;
 use App\Models\ProductSupplier;
+use App\Models\StockLog;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -24,7 +25,8 @@ use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $data = Product::query()
             ->select('products.id', 'products.code', 'products.name', 'master_product_categories.name as category_name', 'master_uom.name as uom_name', 'location')
             ->leftJoin('master_uom', 'products.base_uom_id', 'master_uom.id')
@@ -55,8 +57,9 @@ class ProductController extends Controller
         ]);
     }
 
-    public function create() {
-        
+    public function create()
+    {
+
         $category = MasterProductCategory::query()
             ->where('company_id', Auth::user()->company_id)
             ->get();
@@ -76,7 +79,8 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         try {
             $validate = $request->validate([
                 'name' => 'required',
@@ -129,6 +133,18 @@ class ProductController extends Controller
                         'expired_date' => $request->expired_date[$key],
                         'product_id' => $store->id,
                     ]);
+
+                    StockLog::create([
+                        'product_id' => $store->id,
+                        'product_stock_id' => $storeStock->id,
+                        'user_id' => Auth::id(),
+                        'type' => 'MANUAL_UPDATE',
+                        'qty_change' => $request->stock[$key] ?? 0,
+                        'balance_after' => $request->stock[$key] ?? 0,
+                        'reference_type' => Product::class,
+                        'reference_id' => $store->id,
+                        'note' => 'Input Produk Baru'
+                    ]);
                 }
             }
 
@@ -145,7 +161,8 @@ class ProductController extends Controller
         }
     }
 
-    public function store_api(Request $request) {
+    public function store_api(Request $request)
+    {
         try {
             $validate = $request->validate([
                 'name' => 'required',
@@ -192,12 +209,12 @@ class ProductController extends Controller
                 DB::commit();
                 $data = Product::query()
                     ->select('products.id', 'products.code', 'products.name')
-                    ->with(['ProductDetail', 'ProductDetail.Uom', 'Stock' => function($query) {
+                    ->with(['ProductDetail', 'ProductDetail.Uom', 'Stock' => function ($query) {
                         $query->where('stock', '>', 0);
                     }])
                     ->where('products.id', $store->id)
                     ->get();
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Produk berhasil ditambahkan',
@@ -220,7 +237,8 @@ class ProductController extends Controller
         }
     }
 
-    public function show($id) {
+    public function show($id)
+    {
         $data = Product::query()
             ->with(['Category', 'BaseUom'])
             ->where('company_id', Auth::user()->company_id)
@@ -256,7 +274,8 @@ class ProductController extends Controller
         ]);
     }
 
-    public function edit($id) {
+    public function edit($id)
+    {
         $data = Product::query()
             ->where('company_id', Auth::user()->company_id)
             ->where('id', $id)
@@ -291,7 +310,8 @@ class ProductController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         try {
             $validate = $request->validate([
                 'name' => 'required',
@@ -350,7 +370,8 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $delete = Product::query()
             ->where('company_id', Auth::user()->company_id)
             ->where('id', $id)
@@ -363,25 +384,27 @@ class ProductController extends Controller
         }
     }
 
-    public function search(Request $request) {
+    public function search(Request $request)
+    {
         $data = Product::query()
             ->select('products.id', 'products.code', 'products.name')
-            ->with(['ProductDetail', 'ProductDetail.Uom', 'Stock' => function($query) {
+            ->with(['ProductDetail', 'ProductDetail.Uom', 'Stock' => function ($query) {
                 $query->where('stock', '>', 0);
             }])
             ->where('products.company_id', Auth::user()->company_id)
-            ->where(function($querySearch) use($request) {
+            ->where(function ($querySearch) use ($request) {
                 $querySearch->where("products.name", "like", "%$request->search%")
                     ->orWhere("products.code", "like", "%$request->search%");
             })
             ->get();
-        
+
         return response()->json([
             'data' => json_encode($data)
         ]);
     }
 
-    public function indexPurchase(Request $request) {
+    public function indexPurchase(Request $request)
+    {
         $data = ProductPurchase::query()
             ->with(['Supplier', 'PurchaseDetail'])
             ->where('company_id', Auth::user()->company_id)
@@ -397,7 +420,8 @@ class ProductController extends Controller
         ]);
     }
 
-    public function StorePurchase(Request $request) {
+    public function StorePurchase(Request $request)
+    {
         try {
             $validate = $request->validate([
                 'no_invoice' => 'required',
@@ -421,7 +445,8 @@ class ProductController extends Controller
         }
     }
 
-    public function ShowPurchase($id) {
+    public function ShowPurchase($id)
+    {
         $data = ProductPurchase::where('id', $id)
             ->with(['Supplier', 'PurchaseDetail', 'PurchaseDetail.Product', 'PurchaseDetail.Product.ProductDetail', 'PurchaseDetail.Product.ProductDetail.Uom', 'PurchaseDetail.Stock'])
             ->where('company_id', Auth::user()->company_id)
@@ -447,7 +472,8 @@ class ProductController extends Controller
         ]);
     }
 
-    public function StoreDetailPurchase(Request $request, $id) {
+    public function StoreDetailPurchase(Request $request, $id)
+    {
         try {
             DB::beginTransaction();
             $productPurchase = ProductPurchase::where('id', $id)->first();
@@ -489,7 +515,8 @@ class ProductController extends Controller
         }
     }
 
-    public function UpdateDetailPurchase(Request $request) {
+    public function UpdateDetailPurchase(Request $request)
+    {
         $data = ProductPurchaseDetail::where('id', $request->detail_id)->first();
         try {
             DB::beginTransaction();
@@ -530,7 +557,8 @@ class ProductController extends Controller
         }
     }
 
-    public function DeleteDetailPurchase($id) {
+    public function DeleteDetailPurchase($id)
+    {
         $data = ProductPurchaseDetail::where('id', $id)->first();
         try {
             DB::beginTransaction();
@@ -549,7 +577,8 @@ class ProductController extends Controller
         }
     }
 
-    public function confirmationPurchase(Request $request, $id) {
+    public function confirmationPurchase(Request $request, $id)
+    {
         try {
             DB::beginTransaction();
             $productPurchase = ProductPurchase::where('id', $id)->first();
@@ -561,8 +590,20 @@ class ProductController extends Controller
             $purchaseDetail = ProductPurchaseDetail::where('product_purchase_id', $id)->get();
             foreach ($purchaseDetail as $item) {
                 $productStock = ProductStock::where('id', $item->product_stok_id)->first();
-                ProductStock::where('id', $item->product_stok_id)->update([
+                ProductStock::where('id', $item->product_id)->update([
                     'stock' => $productStock->stock + $item->quantity_on_base_uom
+                ]);
+
+                StockLog::create([
+                    'product_id' => $item->product_id,
+                    'product_stock_id' => $item->product_stok_id,
+                    'user_id' => Auth::id(),
+                    'type' => 'PURCHASE',
+                    'qty_change' => $item->quantity_on_base_uom,
+                    'balance_after' => $productStock->stock + $item->quantity_on_base_uom,
+                    'reference_type' => ProductPurchaseDetail::class,
+                    'reference_id' => $item->id,
+                    'note' => 'Pembelian Produk: ' . $item->Product->name
                 ]);
             }
 
